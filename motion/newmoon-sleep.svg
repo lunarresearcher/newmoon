@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="bgg" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#121a2a"/><stop offset="1" stop-color="#07090e"/></radialGradient>
+    <radialGradient id="face" cx="38%" cy="35%" r="75%"><stop offset="0" stop-color="#f7f2e7"/><stop offset=".7" stop-color="#efe9dc"/><stop offset="1" stop-color="#b9b19f"/></radialGradient>
+    <linearGradient id="beam" x1="0" x2="1"><stop offset="0" stop-color="#a3b6ff" stop-opacity="0"/><stop offset=".75" stop-color="#a3b6ff" stop-opacity=".9"/><stop offset="1" stop-color="#a3b6ff" stop-opacity="0"/></linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="halo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="40"/></filter>
+    <clipPath id="head"><circle cx="512" cy="545" r="300"/></clipPath>
+    <clipPath id="back"><rect x="0" y="0" width="1024" height="550"/></clipPath>
+    <clipPath id="front"><rect x="0" y="550" width="1024" height="1024"/></clipPath>
+  </defs>
+  
+  <circle cx="512" cy="545" r="330" fill="#efe9dc" opacity="0.0548" filter="url(#halo)"/>
+  <ellipse cx="512" cy="555" rx="440" ry="105" transform="rotate(-16 512 545)" fill="none" stroke="#a3b6ff" stroke-opacity=".55" stroke-width="12" clip-path="url(#back)"/>
+  <circle cx="512" cy="545" r="300" fill="url(#face)"/>
+  <g clip-path="url(#head)" opacity=".5">
+    <circle cx="370" cy="380" r="38" fill="#c9c1ae"/><circle cx="330" cy="660" r="26" fill="#c9c1ae"/><circle cx="430" cy="790" r="44" fill="#cfc7b5"/>
+    <circle cx="620" cy="790" r="22" fill="#c9c1ae"/><circle cx="700" cy="360" r="30" fill="#c9c1ae"/><circle cx="270" cy="520" r="18" fill="#c9c1ae"/>
+  </g>
+  <path d="M512 245 A300 300 0 0 1 512 845 A276 300 0 0 1 512 245 Z" fill="#1a2030" opacity=".92" clip-path="url(#head)" filter="url(#soft)"/>
+  <circle cx="512" cy="545" r="300" fill="none" stroke="#efe9dc" stroke-opacity=".35" stroke-width="6"/>
+  <rect x="300" y="455" width="420" height="160" rx="80" fill="#0b1018" stroke="#273144" stroke-width="8"/>
+  <rect x="322" y="472" width="150" height="22" rx="11" fill="#ffffff" opacity=".06"/>
+  <rect x="389" y="529" width="72" height="12" rx="6" fill="#a3b6ff" opacity=".45"/><rect x="564" y="529" width="72" height="12" rx="6" fill="#a3b6ff" opacity=".45"/>
+  <path d="M478 690 Q505 700 532 690" stroke="#2a2f3d" stroke-width="12" stroke-linecap="round" fill="none" opacity=".6"/>
+  <ellipse cx="512" cy="555" rx="440" ry="105" transform="rotate(-16 512 545)" fill="none" stroke="#a3b6ff" stroke-opacity=".55" stroke-width="12" clip-path="url(#front)"/>
+  <circle cx="873.050356142356" cy="514.9377840704901" r="26" fill="#273144" />
+  <text x="760" y="300" font-family="JetBrains Mono" font-weight="600" font-size="70" fill="#a3b6ff" opacity=".7">z</text><text x="820" y="230" font-family="JetBrains Mono" font-weight="600" font-size="50" fill="#a3b6ff" opacity=".45">z</text>
+</svg>

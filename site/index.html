@@ -8,10 +8,10 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Newmoon · your number, off the lists">
 <meta property="og:description" content="Six Grok Bots take your phone number and home address off 45 people-search sites and check again every new moon. Free.">
-<meta property="og:url" content="https://newmoon.tools/">
-<meta property="og:image" content="https://newmoon.tools/og.png">
+<meta property="og:url" content="https://www.newmoon.website/">
+<meta property="og:image" content="https://www.newmoon.website/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://newmoon.tools/og.png">
+<meta name="twitter:image" content="https://www.newmoon.website/og.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Newmoon</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -105,6 +105,7 @@ section{padding-block:clamp(52px,6.5vw,88px)}
 .start-grid{display:grid;grid-template-columns:1fr 1fr 1fr 104px;gap:10px;padding:16px 16px 4px}
 .start-acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px 16px}
 .start-acts .note{flex:1;min-width:200px}
+.start .latin{padding:0 16px 14px;color:var(--warn)}
 @media (max-width:620px){.start-grid{grid-template-columns:1fr 1fr}.start-head span:last-child{display:none}}
 .hello{color:var(--accent)}
 .facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:36px;padding-top:22px;border-top:1px solid var(--line);font:500 13px/1.3 var(--f-mono);color:var(--mute)}
@@ -401,6 +402,28 @@ select.status[data-s=skip]{color:var(--dim);text-decoration:line-through}
 @media (max-width:860px){.faq{grid-template-columns:1fr}}
 
 /* close + footer */
+.tok-pill{font:600 12.5px/1 var(--f-mono);color:var(--bg);background:var(--accent);border-radius:999px;padding:8px 11px;text-decoration:none;letter-spacing:.02em;white-space:nowrap}
+.tok-pill:hover{background:#c3d0ff}
+@media (max-width:420px){.tok-pill{margin-left:auto}}
+.ca-bar{background:color-mix(in srgb, var(--accent) 10%, var(--bg));border-bottom:1px solid color-mix(in srgb, var(--accent) 30%, var(--line))}
+.ca-in{display:flex;align-items:center;gap:12px;min-height:40px;font:500 12.5px/1 var(--f-mono)}
+.ca-tick{color:var(--accent);font-weight:600;text-decoration:none;white-space:nowrap}
+.ca-k{color:var(--dim);letter-spacing:.12em;font-size:11px}
+.ca-in code{color:var(--text);font:500 12.5px/1 var(--f-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:0 1 auto}
+.ca-btn{font:500 12px/1 var(--f-mono);color:var(--mute);background:none;border:1px solid var(--line-2);border-radius:6px;padding:6px 9px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.ca-btn:hover{color:var(--text);border-color:var(--mute)}
+.ca-buy{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+.ca-buy:hover{color:var(--bg);background:#c3d0ff}
+@media (max-width:520px){.ca-k{display:none}.ca-in{gap:8px}}
+.token{border-top:1px solid var(--line)}
+.tok{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:center}
+.tok-mascot{width:clamp(160px,22vw,260px);height:auto;animation:bob 5s ease-in-out infinite}
+.tok-main{display:grid;gap:14px;min-width:0}
+.tok-main h2{font-size:clamp(48px,8vw,96px);letter-spacing:-.045em}
+.tok-ca{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:6px;padding:12px 14px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);max-width:680px}
+.tok-label{font:500 11px/1 var(--f-mono);letter-spacing:.14em;color:var(--dim)}
+.tok-ca code{font:500 14px/1.4 var(--f-mono);color:var(--text);overflow-wrap:anywhere;flex:1;min-width:0}
+@media (max-width:620px){.tok{grid-template-columns:1fr}.tok-mascot{width:150px}}
 .close{border-top:1px solid var(--line);text-align:left}
 .close .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end}
 .close h2{font-size:clamp(40px,7vw,92px);letter-spacing:-.045em;line-height:.95}
@@ -419,6 +442,15 @@ footer.site p + p{margin-top:10px}
 </style>
 </head>
 <body>
+<div class="ca-bar">
+  <div class="wrap ca-in">
+    <a class="ca-tick" href="#token">$NEWMOON</a>
+    <span class="ca-k">CA</span>
+    <code id="ca-top"></code>
+    <button class="ca-btn" type="button" id="ca-copy">⧉ copy</button>
+    <a class="ca-btn ca-buy" id="ca-buy" href="#" target="_blank" rel="noopener noreferrer">buy ↗</a>
+  </div>
+</div>
 <header class="top">
   <div class="wrap">
     <a class="mark" href="#top" aria-label="Newmoon, back to top">
@@ -435,6 +467,7 @@ footer.site p + p{margin-top:10px}
       <a href="#faq">FAQ</a>
       <a href="docs.html" style="color:var(--text)">Docs</a>
     </nav>
+    <a class="tok-pill" href="#token">$NEWMOON</a>
     <a class="btn small primary" href="#plan"><span class="sig">$</span> build my plan</a>
   </div>
 </header>
@@ -449,15 +482,16 @@ footer.site p + p{margin-top:10px}
         <form class="start" id="start" autocomplete="off">
           <div class="start-head"><span><b>//</b> start with your name</span><span>stays in your browser</span></div>
           <div class="start-grid">
-            <div class="field"><label for="f-first">First name</label><input type="text" id="f-first" placeholder="Jordan"></div>
-            <div class="field"><label for="f-last">Last name</label><input type="text" id="f-last" placeholder="Avery"></div>
-            <div class="field"><label for="f-city">City</label><input type="text" id="f-city" placeholder="Austin"></div>
+            <div class="field"><label for="f-first">First name</label><input type="text" id="f-first" lang="en" spellcheck="false" autocapitalize="words" placeholder="Jordan"></div>
+            <div class="field"><label for="f-last">Last name</label><input type="text" id="f-last" lang="en" spellcheck="false" autocapitalize="words" placeholder="Avery"></div>
+            <div class="field"><label for="f-city">City</label><input type="text" id="f-city" lang="en" spellcheck="false" autocapitalize="words" placeholder="Austin"></div>
             <div class="field"><label for="f-state">State</label><select class="in" id="f-state"></select></div>
           </div>
           <div class="start-acts">
             <a class="btn primary" id="scan" href="https://grok.com/" target="_blank" rel="noopener noreferrer"><span class="sig">▸</span> find me with Grok</a>
             <a class="btn" href="#plan">full removal plan ↓</a>
           </div>
+          <p class="note latin" id="latin-hint" hidden>Use Latin letters, the way your name appears on US records. That's what people-search sites list.</p>
         </form>
         <div class="facts">
           <div><b id="f-sites">73</b>sites with opt-out links</div>
@@ -691,6 +725,25 @@ footer.site p + p{margin-top:10px}
     </div>
   </section>
 
+  <section id="token" class="token">
+    <div class="wrap tok">
+      <img class="tok-mascot" src="newmoon-idle.svg" width="260" height="260" alt="NEWMOON, the Newmoon mascot">
+      <div class="tok-main">
+        <div class="eyebrow"><span><b>//</b> community token</span></div>
+        <h2>$NEWMOON</h2>
+        <p class="lede">The community launched $NEWMOON on Solana for this project. Newmoon itself stays free, and you never need the token to use it.</p>
+        <div class="tok-ca">
+          <span class="tok-label">CA</span>
+          <code id="tok-ca"></code>
+          <button class="btn small" type="button" id="tok-copy">⧉ copy</button>
+        </div>
+        <div class="cta" style="margin-top:20px">
+          <a class="btn primary" id="tok-buy" href="#" target="_blank" rel="noopener noreferrer"><span class="sig">$</span> buy $NEWMOON on GMGN ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="close">
     <div class="wrap">
       <h2>$0.<br><span>Not $129 a year.</span></h2>
@@ -843,7 +896,10 @@ const host = u => { try { return new URL(u).hostname.replace(/^www\./,""); } cat
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const framed = (() => { try { return window.self !== window.top; } catch(e) { return true; } })();
 // The page's own address, folder included, so it also works at username.github.io/newmoon/
-const SITE_URL = (!framed && /^https?:$/.test(location.protocol)) ? (location.origin + location.pathname.replace(/[^/]*$/, "")).replace(/\/$/, "") : "https://newmoon.tools";
+const SITE_URL = (!framed && /^https?:$/.test(location.protocol)) ? (location.origin + location.pathname.replace(/[^/]*$/, "")).replace(/\/$/, "") : "https://www.newmoon.website";
+// Community token. Change these two lines if the contract or the chart link ever changes.
+const TOKEN_CA = "DMfgsDZJjVqDor9j8jNZRiNaL2ZZTPzvnn9hX1GDpump";
+const TOKEN_URL = "https://gmgn.ai/sol/token/" + TOKEN_CA;
 // After you build the Newmoon bot in your own Grok Bot, paste its x.ai share link here to show the one-click button.
 const GROK_BOT_SHARE = "";
 const toastEl = $("#toast"); let toastT;
@@ -1005,7 +1061,11 @@ function renderWho(){
   const m = S.me, place = [m.city, m.state].filter(Boolean).join(", ");
   $("#who").innerHTML = (m.first || m.last) ? `Plan for <b>${esc(meName())}</b>${place ? ", " + esc(place) : ""} <a href="#top">edit</a>` : `Add your name at the top first. <a href="#top">go</a>`;
   const eye = $("#hero-eye");
-  eye.innerHTML = m.first ? `<b>//</b> <span class="hello">hi ${esc(m.first)}</span> · your plan has ${tally().n} stops` : `<b>//</b> your privacy assistant, powered by Grok`;
+  // Greet only names typed in Latin script; anything else gets the hint under the form instead
+  const latin = v => /^[A-Za-z\u00C0-\u024F' .-]*$/.test(v || "");
+  const okName = m.first && m.first.length >= 2 && latin(m.first);
+  $("#latin-hint").hidden = [m.first, m.last, m.city].every(latin);
+  eye.innerHTML = okName ? `<b>//</b> <span class="hello">hi ${esc(m.first)}</span> · your plan has ${tally().n} stops` : `<b>//</b> your privacy assistant, powered by Grok`;
 }
 function renderForm(){
   $("#f-state").innerHTML = `<option value="">pick</option>` + STATES.map(s => `<option${S.me.state===s?" selected":""}>${s}</option>`).join("");
@@ -1569,6 +1629,14 @@ const Orbit = (() => {
     send(){ if (reduce) return; sendAt = (performance.now() - start)/1000; kick(); }
   };
 })();
+
+/* ---------- token ---------- */
+$("#tok-ca").textContent = TOKEN_CA;
+$("#tok-buy").href = TOKEN_URL;
+$("#tok-copy").addEventListener("click", () => copy(TOKEN_CA, "Contract address copied"));
+$("#ca-top").textContent = TOKEN_CA;
+$("#ca-buy").href = TOKEN_URL;
+$("#ca-copy").addEventListener("click", () => copy(TOKEN_CA, "Contract address copied"));
 
 /* ---------- boot ---------- */
 $("#foot-moon").textContent = "Upcoming new moons: " + MOONS.slice(0,4).map(fmtShort).join(" · ") + ".";

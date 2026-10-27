@@ -3,7 +3,7 @@ import pathlib, sys
 root = pathlib.Path(__file__).parent
 src = (root/"src/page.html").read_text()
 head, body = src.split("<!-- /head -->", 1)
-domain = sys.argv[1] if len(sys.argv) > 1 else "https://newmoon.tools"
+domain = sys.argv[1] if len(sys.argv) > 1 else "https://www.newmoon.website"
 meta = f"""<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07090e">

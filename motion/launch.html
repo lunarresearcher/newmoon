@@ -7,7 +7,7 @@
 <script src="_moon.js"></script>
 <script>
 // Newmoon launch film. render(t) is a pure function of time in seconds, so every frame is reproducible.
-const DOMAIN = new URLSearchParams(location.search).get("domain") || "newmoon.tools";
+const DOMAIN = new URLSearchParams(location.search).get("domain") || "newmoon.website";
 const DUR = 23.5;
 const W = 1080, H = 1350, C = document.getElementById("c"), X = C.getContext("2d");
 const COL = {bg:"#07090e", panel:"#0b1018", raise:"#111827", line:"#1b2331", line2:"#273144", text:"#e6eaf2", mute:"#97a1b5", dim:"#5d687d", moon:"#efe9dc", accent:"#a3b6ff", ok:"#62d3a2", warn:"#e9b45b"};

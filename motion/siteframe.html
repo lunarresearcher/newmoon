@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+html,body{margin:0;background:transparent}
+#f{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Geist,sans-serif;color:#e6eaf2}
+.bg #f{background:radial-gradient(80% 55% at 50% 48%, #121b2d 0%, #06080d 70%)}
+.top{position:absolute;left:56px;right:56px;top:54px;display:flex;align-items:center;gap:16px}
+.top img{width:58px;height:58px}
+.top .w{font:700 42px Geist;letter-spacing:-.02em}.top .w span{color:#5d687d}
+.top .chip{margin-left:auto;font:500 20px "JetBrains Mono";color:#97a1b5;border:2px solid #273144;border-radius:999px;padding:10px 18px}
+.top .chip b{color:#e6eaf2;font-weight:600}
+h1{position:absolute;left:56px;right:56px;top:142px;margin:0;font:600 56px/1.05 Geist;letter-spacing:-.03em}
+h1 span{color:#5d687d}
+.win{position:absolute;left:38px;top:290px;width:1004px;height:808px;border:2px solid #273144;border-radius:20px;overflow:hidden;box-shadow:0 40px 120px -40px rgba(120,140,220,.35)}
+.bar{height:54px;background:#0d121c;border-bottom:2px solid #1b2331;display:flex;align-items:center;gap:10px;padding:0 18px}
+.bar i{width:14px;height:14px;border-radius:50%;background:#273144}
+.url{margin:0 auto;transform:translateX(-30px);background:#06080d;border:2px solid #1b2331;border-radius:10px;padding:8px 22px;font:500 19px "JetBrains Mono";color:#e6eaf2;display:flex;gap:10px;align-items:center}
+.url span{color:#62d3a2}
+.hole{height:752px}
+.chrome .hole{background:transparent}
+.cap{position:absolute;left:40px;right:40px;top:1128px;text-align:center;font:600 46px/1.1 Geist;letter-spacing:-.025em}
+.foot{position:absolute;left:0;right:0;bottom:52px;display:flex;justify-content:center}
+.foot div{background:#efe9dc;color:#06080d;font:600 26px "JetBrains Mono";border-radius:14px;padding:14px 24px;display:flex;gap:12px}
+.foot span{color:#4f63b8}
+</style></head><body>
+<div id="f">
+  <div class="top"><img src="logo.svg" alt=""><div class="w">NEW<span>MOON</span></div><div class="chip">powered by <b>Grok</b></div></div>
+  <h1 id="h1">The site is live.<br><span>Type your name, Grok does the rest.</span></h1>
+  <div class="win"><div class="bar"><i></i><i></i><i></i><div class="url"><span>●</span>www.newmoon.website</div></div><div class="hole"></div></div>
+  <div class="cap" id="cap"></div>
+  <div class="foot"><div><span>$</span>open www.newmoon.website</div></div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+document.body.className = q.get("mode") || "bg";
+if (q.get("title")) document.getElementById("h1").innerHTML = q.get("title") + "<br><span>" + (q.get("sub") || "") + "</span>";
+if (q.get("nowin")) document.querySelector(".win").style.visibility = "hidden";
+if (q.get("mode") === "cap"){ for (const el of document.querySelectorAll("#f > :not(.cap)")) el.style.visibility = "hidden"; document.getElementById("cap").textContent = q.get("text"); }
+if (q.get("mode") === "chrome") document.getElementById("cap").remove();
+</script></body></html>

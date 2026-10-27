@@ -2,7 +2,7 @@
 # Usage: python3 tools/make_readme.py [https://yourdomain.com]
 import json, sys, pathlib, datetime, math
 root = pathlib.Path(__file__).resolve().parent.parent
-site = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "https://newmoon.tools"
+site = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "https://www.newmoon.website"
 data = json.loads((root/"kit/brokers.json").read_text())
 sites, regs = data["sites"], data["registries"]
 

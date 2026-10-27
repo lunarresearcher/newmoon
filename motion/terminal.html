@@ -1,0 +1,185 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Newmoon remake of the original spam-call post: same 1080x1350 terminal, Newmoon crew, the moon, NEWMOON at the end. */
+:root{--bg:#06080d;--panel:#0b0f17;--tile:#0f1520;--line:#1b2331;--line2:#273144;--text:#e6eaf2;--mute:#97a1b5;--dim:#5d687d;--moon:#efe9dc;--acc:#a3b6ff;--ok:#62d3a2;--warn:#e9b45b;--m:"JetBrains Mono",monospace;--g:Geist,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+#f{width:1080px;height:1350px;position:relative;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--g)}
+.win{position:absolute;inset:30px;border:2px solid var(--line2);border-radius:28px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+.tabs{display:flex;align-items:stretch;height:62px;border-bottom:2px solid var(--line);font:500 17px var(--m);color:var(--dim)}
+.tabs>span{display:flex;align-items:center;gap:10px;padding:0 24px;border-right:2px solid var(--line)}
+.tabs .on{color:var(--text);box-shadow:inset 0 3px 0 var(--acc)}
+.tabs .on img{width:24px;height:24px}
+.tabs .right{margin-left:auto;border-right:0;gap:16px;padding-right:18px}
+.tabs .right i{font-style:normal;color:var(--ok)}
+.tabs .pill{color:var(--text);border:2px solid var(--line2);border-radius:10px;padding:8px 14px}
+.body{flex:1;padding:26px 30px 28px;display:flex;flex-direction:column;gap:20px;min-height:0}
+.cmd{display:flex;align-items:center;font:500 22px var(--m);color:var(--mute);white-space:nowrap}
+.cmd b{color:var(--acc);margin:0 12px 0 10px}
+.cmd em{font-style:normal;color:var(--text)}
+.caret{display:inline-block;width:12px;height:26px;background:var(--acc);margin-left:4px}
+.cmd .date{margin-left:auto;font-size:15px;color:var(--dim)}.cmd .date span{color:var(--mute)}
+.stats{display:flex;align-items:flex-end;gap:34px}
+.stat{display:flex;align-items:flex-end;gap:14px}
+.stat b{font:500 68px/.85 var(--g);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat .l{font:500 13px/1.45 var(--m);letter-spacing:.14em;color:var(--dim);text-transform:uppercase;display:grid;gap:6px}
+.stat svg{display:block}
+.moonstat{margin-left:auto;display:flex;align-items:center;gap:14px}
+.moonstat canvas{width:84px;height:84px}
+.lbl{display:flex;align-items:center;gap:14px;font:500 15px var(--m);color:var(--dim)}
+.lbl b{color:var(--acc);font-weight:500}
+.lbl::after{content:"";flex:1;border-top:2px dashed var(--line2);order:1}
+.lbl .live{order:2;color:var(--text);letter-spacing:.12em}.lbl .live::before{content:"● ";color:var(--acc)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tile{border:2px solid var(--line);border-radius:14px;background:var(--tile);padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:10px 10px;height:118px;transition:none}
+.tile.on{border-color:var(--acc);background:#121a2a;box-shadow:0 0 0 1px rgba(163,182,255,.25)}
+.tile .nm{font:500 21px var(--m)}.tile .nm small{color:var(--dim);font-size:14px;margin-right:8px}
+.tile .bar{display:flex;gap:3px;align-self:center}.tile .bar i{width:5px;height:14px;border-radius:1px;background:var(--line2)}.tile .bar i.f{background:var(--acc)}
+.tile p{margin:0;font:400 15px/1.5 var(--m);color:var(--mute)}.tile p b{color:var(--text);font-weight:400}
+.tile .n{font:500 42px/1 var(--g);align-self:end;justify-self:end;font-variant-numeric:tabular-nums}
+.feed{display:grid;align-content:start;min-height:0;overflow:hidden;flex:1}
+.row{display:grid;grid-template-columns:96px 54px minmax(0,1fr) 150px 196px;gap:16px;align-items:center;height:76px;border-bottom:2px solid var(--line);padding-right:4px}
+.row.new{background:linear-gradient(90deg,rgba(163,182,255,.07),transparent 70%)}
+.row time{font:400 15px var(--m);color:var(--dim);padding-left:12px}
+.row .ab{width:50px;height:50px;border:2px solid var(--line2);border-radius:10px;display:grid;place-items:center;font:600 13px var(--m);color:var(--mute);background:var(--panel)}
+.row .ab.lit{background:var(--moon);color:var(--bg);border-color:var(--moon)}
+.row .tt b{display:block;font:500 25px/1.15 var(--g);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .tt span{font:400 15px var(--m);color:var(--dim)}
+.row .by{font:400 15px var(--m);color:var(--dim);text-align:right}
+.chip{height:40px;border:2px solid var(--line2);border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 14px;font:500 14px var(--m);letter-spacing:.12em;text-transform:uppercase}
+.chip::before{content:"";width:10px;height:10px;border-radius:2px;background:currentColor}
+.c-lit{color:var(--moon)}.c-ok{color:var(--ok)}.c-info{color:var(--acc)}.c-warn{color:var(--warn)}.c-dim{color:var(--dim)}
+.c-run{color:var(--acc);border-style:dashed}
+.box{height:262px;border:2px solid var(--line2);border-radius:16px;background:#080b11;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.box header{display:flex;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--line);font:400 15px var(--m);color:var(--dim)}
+.box header b{color:var(--text);font-weight:500}.box header .ok{color:var(--ok)}
+.box .bd{flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.box .to{font:400 15px var(--m);color:var(--dim)}
+.box .say{font:500 34px/1.25 var(--g);letter-spacing:-.01em}
+.box .say .q{color:var(--dim)}
+.box .big{font:600 70px/1 var(--g);letter-spacing:-.04em}
+.box .sub{font:400 18px var(--m);color:var(--dim)}
+.box .sub b{color:var(--acc);font-weight:400}
+.box footer{display:flex;justify-content:space-between;align-items:center;padding:0 22px 18px;font:500 20px var(--m)}
+.box footer .ap b{color:var(--acc)}.box footer .ap .y{color:var(--ok)}
+.dots{display:flex;align-items:center;gap:10px;font:400 15px var(--m);color:var(--dim)}.dots i{width:26px;height:8px;border-radius:3px;background:var(--line2)}.dots i.f{background:var(--ok)}
+.flags{font:400 16px var(--m);color:var(--mute)}
+.open{position:absolute;right:22px;bottom:20px;background:var(--moon);color:var(--bg);font:600 22px var(--m);border-radius:12px;padding:14px 20px;display:flex;gap:12px}
+.open span{color:#4f63b8}
+.mascot{position:absolute;right:30px;top:58px;width:120px;height:120px}
+.priv{font:500 15px var(--m);color:var(--acc)}
+</style></head><body>
+<div id="f"><div class="win">
+  <div class="tabs"><span class="on"><img src="logo.svg" alt="">newmoon — run</span><span>routines.yml</span><span>ledger.csv</span><span class="right"><i>●</i> connected <span class="pill">@lunarresearcher</span></span></div>
+  <div class="body">
+    <div class="cmd">~/lunar<b>❯</b><em id="cmd"></em><span class="caret" id="caret"></span><span class="date">update <span id="date"></span></span></div>
+    <div class="stats">
+      <div class="stat"><b id="s-found">0</b><div class="l"><span>listings<br>found</span><svg width="84" height="22" id="sp1"></svg></div></div>
+      <div class="stat"><b id="s-filed">0</b><div class="l"><span>opt-outs<br>filed</span><svg width="84" height="22" id="sp2"></svg></div></div>
+      <div class="stat"><b>$0</b><div class="l"><span>you pay<br>deleteme: $129/yr</span><svg width="84" height="22"><line x1="0" y1="20" x2="84" y2="20" stroke="#273144" stroke-width="2"/></svg></div></div>
+      <div class="moonstat"><canvas id="moon" width="168" height="168"></canvas><div class="stat"><div class="l"><span>moon</span><span id="s-moon" style="color:var(--text);font-size:22px;letter-spacing:0">100%</span></div></div></div>
+    </div>
+    <div class="lbl"><span><b>//</b> what it does while you sleep</span></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="lbl"><span><b>//</b> your number, site by site · 73 sites</span><span class="live">LIVE</span></div>
+    <div class="feed" id="feed"></div>
+    <div class="box" id="box"></div>
+  </div>
+</div></div>
+<script src="_moon.js"></script>
+<script>
+const Q = new URLSearchParams(location.search), DOMAIN = Q.get("domain") || "newmoon.website";
+const CMD = "grokbot skill run newmoon --recheck new-moon";
+const CREW = [["01","scout","searches 73 sites","for your number"],["02","filer","files the opt-out","on every listing"],["03","clerk","clicks the email","so it sticks"],
+  ["04","registry","do not call,","free, one time"],["05","watch","checks again on","every new moon"],["06","ledger","one sheet, every","line has proof"]];
+const NEXT = "Nov 9";
+const EV = [
+  {bot:"scout", ab:"SPK", t:"Spokeo", s:"phone, age, relatives", c:"lit", l:"listed", found:1},
+  {bot:"scout", ab:"WP", t:"Whitepages", s:"phone + home address", c:"lit", l:"listed", found:1},
+  {bot:"scout", ab:"TC", t:"Truecaller", s:"your name on your number", c:"lit", l:"listed", found:1, tag:"new"},
+  {bot:"filer", ab:"SPK", t:"Spokeo opt-out", s:"profile URL + email", draft:["draft_1.md","filer / spokeo","to: Spokeo / opt-out form","Remove the listing for (512) •••-••41. Email only, no ID. Submit?"], c:"info", l:"filed"},
+  {bot:"clerk", ab:"@", t:"Spokeo confirmation", s:"link in your inbox", c:"ok", l:"confirmed"},
+  {bot:"filer", ab:"TC", t:"Truecaller unlisting", s:"caller-ID search", draft:["draft_2.md","filer / truecaller","to: Truecaller / unlisting","Unlist (512) •••-••41 from Truecaller search. No account. Submit?"], c:"info", l:"filed"},
+  {bot:"registry", ab:"DNC", t:"donotcall.gov", s:"your number, free", c:"ok", l:"registered"},
+  {bot:"scout", ab:"BV", t:"BeenVerified", s:"phone + 2 old addresses", c:"lit", l:"listed", found:1},
+  {bot:"filer", ab:"WP", t:"Whitepages opt-out", s:"verification call to you", c:"warn", l:"needs you"},
+  {bot:"filer", ab:"BV", t:"BeenVerified opt-out", s:"people + property search", draft:["draft_3.md","filer / beenverified","to: BeenVerified / opt-out","Opt out (512) •••-••41 and 2 past addresses. Submit?"], c:"info", l:"filed"},
+  {bot:"scout", ab:"FPS", t:"FastPeopleSearch", s:"searched 3 ways", c:"dim", l:"not listed"},
+  {bot:"watch", ab:"NM", t:"Recheck", s:"new moon · " + NEXT, c:"info", l:"scheduled"}
+];
+// timing
+const T_CMD = 1.7, SEARCH = .55, STEP = 1.05, CPS = 36, HOLD = .55, APPROVED = .95;
+let t0 = T_CMD + .35; const SCHED = [];
+for (const e of EV){
+  if (e.draft){ const ty = e.draft[3].length / CPS; SCHED.push({e, at:t0, ty}); t0 += .35 + ty + HOLD + APPROVED; }
+  else { SCHED.push({e, at:t0, ty:0}); t0 += STEP; }
+}
+const T_END = t0 + .3, DUR = T_END + 5.2;
+window.DUR = DUR;
+
+const $ = id => document.getElementById(id);
+const clamp = (v,a=0,b=1) => Math.max(a, Math.min(b, v));
+const hms = s => [Math.floor(s/3600)%24, Math.floor(s/60)%60, s%60].map(v => String(v).padStart(2,"0")).join(":");
+function spark(id, n){ const pts = [[0,20],[18,20],[30,20 - Math.min(n,6)*1],[46,20 - Math.min(n,6)*2.4],[62,20 - Math.min(n,6)*2.8],[84,20 - Math.min(n,6)*3]];
+  $(id).innerHTML = `<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="#a3b6ff" stroke-width="2"/>`; }
+
+function render(t){
+  // command
+  const n = Math.floor(clamp((t - .25)/(T_CMD - .25)) * CMD.length);
+  $("cmd").textContent = CMD.slice(0, n);
+  $("caret").style.opacity = Math.floor(t*2.2) % 2 ? 0 : 1;
+  $("date").textContent = "Oct 27, 2026";
+  // state from the schedule
+  let found = 0, filed = 0, approvals = 0, clock = 21*3600 + 2*60 + 40; const per = {}, rows = []; let active = null, draft = null;
+  for (const {e, at, ty} of SCHED){
+    if (t < at) break;
+    clock += 23 + (e.t.length*7) % 37;
+    const dt = t - at;
+    let chip = ["run", e.bot === "scout" || e.bot === "watch" ? "searching" : e.bot === "clerk" ? "opening" : "working"];
+    if (e.draft){
+      const typed = Math.floor(clamp((dt - .35) * CPS, 0, e.draft[3].length));
+      const ok = dt >= .35 + ty + HOLD;
+      chip = ok ? [e.c, e.l] : ["warn", "waits for yes"];
+      draft = {d:e.draft, typed, ok};
+      if (ok){ filed++; approvals++; per[e.bot] = (per[e.bot]||0) + 1; }
+      if (dt < .35 + ty + HOLD + APPROVED) active = e.bot;
+    } else if (dt >= SEARCH){ chip = [e.c, e.l]; found += e.found || 0; per[e.bot] = (per[e.bot]||0) + 1; if (dt < STEP) active = e.bot; }
+    else active = e.bot;
+    rows.unshift({e, chip, clock, fresh: dt < .5});
+  }
+  const end = t >= T_END;
+  // stats + moon: every listing found lights the moon, every opt-out dims it
+  $("s-found").textContent = found; $("s-filed").textContent = filed; spark("sp1", found); spark("sp2", filed);
+  const listedOpen = Math.max(0, found - filed*.8);
+  const k = found ? clamp(.15 + .85 * listedOpen / Math.max(found, 1)) : 1;
+  drawMoon($("moon"), end ? .12 : k, false);
+  $("s-moon").textContent = Math.round((end ? .12 : k)*100) + "%";
+  // tiles
+  $("tiles").innerHTML = CREW.map(([no, id, a, b]) => { const c = per[id] || 0;
+    return `<div class="tile${active === id && !end ? " on" : ""}"><span class="nm"><small>${no}</small>${id}</span><span class="bar">${Array.from({length:8}, (_, i) => `<i class="${i < Math.min(8, c*2) ? "f" : ""}"></i>`).join("")}</span><p>${a}<br><b>${b}</b></p><span class="n">${c}</span></div>`; }).join("");
+  // feed
+  $("feed").innerHTML = rows.slice(0, 5).map((r, i) => { const off = r.fresh ? (1 - clamp((t - (r.clock*0)) )) : 0;
+    const cls = {lit:"c-lit", ok:"c-ok", info:"c-info", warn:"c-warn", dim:"c-dim", run:"c-run"}[r.chip[0]];
+    return `<div class="row${i === 0 ? " new" : ""}"><time>${hms(r.clock)}</time><span class="ab${r.e.tag ? " lit" : ""}">${r.e.ab}</span><span class="tt"><b>${r.e.t}</b><span>${r.e.s}</span></span><span class="by">← ${CREW.find(c => c[1] === r.e.bot)[0]} ${r.e.bot}</span><span class="chip ${cls}">${r.chip[1]}</span></div>`; }).join("");
+  // bottom box
+  const box = $("box");
+  if (end){
+    box.innerHTML = `<header><span><b>summary.md</b> — run complete</span><span class="ok">exit 0</span></header>
+      <div class="bd" style="padding-right:170px"><div class="big">$0. Not $129 a year.</div><div class="sub"><b>//</b> Grok Bot pulls your number off 73 sites now.</div><div class="flags">--scout --filer --clerk --registry --watch --ledger</div></div>
+      <div class="open"><span>$</span>open ${DOMAIN}</div><img class="mascot" src="newmoon-done.svg" alt="" style="opacity:${clamp((t - T_END - .8)/.5)};transform:translateY(${(1 - clamp((t - T_END - .8)/.5))*20}px)">`;
+    box.querySelector(".open").style.opacity = clamp((t - T_END - 1.4)/.4);
+  } else if (draft){
+    const [file, meta, to, say] = draft.d;
+    box.innerHTML = `<header><span><b>${file}</b> — ${meta}</span><span class="${draft.ok ? "ok" : ""}">${draft.ok ? "submitted" : "unsent"}</span></header>
+      <div class="bd"><div class="to">${to}</div><div class="say"><span class="q">“</span>${say.slice(0, draft.typed)}${draft.typed >= say.length ? '<span class="q">”</span>' : '<span class="caret" style="height:30px;vertical-align:-4px"></span>'}</div></div>
+      <footer><span class="ap"><b>❯</b> approve? [y/N] ${draft.ok ? '<span class="y">y ✓ submitted</span>' : ""}</span><span class="dots">${[0,1,2].map(i => `<i class="${i < approvals ? "f" : ""}"></i>`).join("")} ${approvals}/3 approved by you</span></footer>`;
+  } else {
+    box.innerHTML = `<header><span><b>rules.md</b> — read-only</span><span>newmoon v1.0</span></header>
+      <div class="bd"><div class="priv">// privacy</div><div class="big" style="font-size:64px">Your number, off the lists.</div><div class="sub">free · 73 sites · it asks before every form</div></div>`;
+  }
+}
+window.ready = (async () => { await document.fonts.ready; texture(); render(0); return true; })();
+window.render = render;
+if (Q.has("play")) window.ready.then(() => { const s = performance.now(); const loop = n => { render(((n - s)/1000) % DUR); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+</script></body></html>

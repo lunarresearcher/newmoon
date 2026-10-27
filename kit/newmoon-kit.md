@@ -156,7 +156,7 @@ For each site give me: listed / not listed / unsure, what it shows (phone, addre
 
 End with a short table and the three sites I should opt out of first.
 
-Full removal plan for Grok Bot: https://newmoon.tools
+Full removal plan for Grok Bot: https://www.newmoon.website
 ```
 
 ## 01 scout

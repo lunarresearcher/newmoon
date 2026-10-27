@@ -1,0 +1,100 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+html,body{margin:0;background:#06080d}
+#f{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Geist,sans-serif;color:#e6eaf2;background:#06080d}
+canvas#c{position:absolute;inset:0;width:1080px;height:1350px}
+.m{position:absolute;left:290px;top:250px;width:500px;height:500px}
+.m img{position:absolute;inset:0;width:100%;height:100%}
+.plate{position:absolute;left:90px;right:90px;top:800px;height:250px;border-radius:28px;border:3px solid #a3b6ff;background:linear-gradient(180deg,#0f1626,#0a0f19);overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 8px rgba(163,182,255,.08),0 30px 120px -20px rgba(163,182,255,.45)}
+.plate b{font:700 124px/1 Geist;letter-spacing:-.035em}
+.plate b span{color:#a3b6ff}
+.plate .shine{position:absolute;top:-20%;bottom:-20%;width:180px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transform:skewX(-20deg)}
+.plate .tick{position:absolute;left:28px;top:20px;font:500 20px "JetBrains Mono";color:#5d687d;letter-spacing:.14em}
+.plate .tick i{font-style:normal;color:#62d3a2}
+.plate .sol{position:absolute;right:28px;top:20px;font:500 20px "JetBrains Mono";color:#5d687d;letter-spacing:.14em}
+.top{position:absolute;left:64px;right:64px;top:60px;display:flex;align-items:center;gap:14px}
+.top img{width:52px;height:52px}.top .w{font:700 36px Geist;letter-spacing:-.02em}.top .w span{color:#5d687d}
+.term{position:absolute;left:90px;right:90px;top:150px;font:500 26px "JetBrains Mono";color:#97a1b5;white-space:nowrap}
+.term b{color:#a3b6ff;font-weight:500}.term em{font-style:normal;color:#e6eaf2}
+.caret{display:inline-block;width:14px;height:30px;background:#a3b6ff;vertical-align:-5px;margin-left:4px}
+.tag{position:absolute;left:0;right:0;top:1090px;text-align:center;font:600 50px Geist;letter-spacing:-.03em}
+.tag span{color:#5d687d}
+.url{position:absolute;left:0;right:0;top:1180px;display:flex;justify-content:center}
+.url div{background:#efe9dc;color:#06080d;font:600 28px "JetBrains Mono";border-radius:14px;padding:14px 26px}
+.url span{color:#4f63b8}
+.disc{position:absolute;left:0;right:0;bottom:44px;text-align:center;font:500 17px "JetBrains Mono";color:#5d687d}
+</style></head><body>
+<div id="f">
+  <canvas id="c" width="2160" height="2700"></canvas>
+  <div class="top" id="top"><img src="logo.svg"><div class="w">NEW<span>MOON</span></div></div>
+  <div class="term" id="term"></div>
+  <div class="m" id="m"><img id="p-idle" src="newmoon-idle.svg"><img id="p-scan" src="newmoon-scan.svg"><img id="p-found" src="newmoon-found.svg"><img id="p-done" src="newmoon-done.svg"></div>
+  <div class="plate" id="plate"><span class="tick" id="tick">● LIVE</span><span class="sol">SOLANA</span><b><span>$</span>NEWMOON</b><i class="shine" id="shine"></i></div>
+  <div class="tag" id="tag">Your number, <span>off the lists.</span></div>
+  <div class="url" id="url"><div><span>$ </span>newmoon.website</div></div>
+  <div class="disc" id="disc">community token · not made or endorsed by xAI · not financial advice</div>
+</div>
+<script>
+// $NEWMOON promo: NEWMOON scans its orbit, clears it, then the ticker plate drops in. render(t) is pure.
+const DUR = 11.5, W = 1080, H = 1350, C = [540, 500];
+const x = document.getElementById("c").getContext("2d"); x.scale(2, 2);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
+const out3 = v => 1 - Math.pow(1 - v, 3), back = v => { const c = 1.7; return 1 + (c + 1) * Math.pow(v - 1, 3) + c * Math.pow(v - 1, 2); };
+let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+const STARS = Array.from({length: 170}, () => [r() * W, r() * H, .08 + r() * .4, r() < .9 ? 1 : 1.8, r() * 6.28]);
+const RINGS = [300, 375, 450], SATS = [];
+RINGS.forEach((R, ri) => { const n = [14, 22, 30][ri]; for (let j = 0; j < n; j++) SATS.push({R, a0: j / n * 6.283 + ri * .4, w: [.18, -.12, .08][ri], off: r()}); });
+const CMD = "grok ❯ scanning 73 sites for your number";
+function draw(t){
+  x.clearRect(0, 0, W, H);
+  const g = x.createRadialGradient(C[0], C[1], 0, C[0], C[1], 760); g.addColorStop(0, "#131c2e"); g.addColorStop(1, "#06080d"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  for (const [px, py, a, sz, ph] of STARS){ x.fillStyle = `rgba(230,234,242,${a * (.7 + .3 * Math.sin(t * 2 + ph))})`; x.beginPath(); x.arc(px, py, sz, 0, 6.29); x.fill(); }
+  const ringIn = out3(seg(t, .2, 1.4));
+  x.lineWidth = 1.6;
+  RINGS.forEach((R, i) => { x.strokeStyle = `rgba(163,182,255,${(.14 - i * .03) * ringIn})`; x.setLineDash(i === 2 ? [4, 12] : []); x.beginPath(); x.arc(C[0], C[1], R, -1.57, -1.57 + 6.283 * ringIn); x.stroke(); });
+  x.setLineDash([]);
+  // Grok's beam sweeps 2.2 → 5.6s, clearing satellites as it passes
+  const beamOn = seg(t, 2.0, 2.4) * (1 - seg(t, 5.6, 6.0)), ang = -1.57 + (t - 2.2) * 6.283 / 3.2;
+  if (beamOn > 0){
+    const bg = x.createConicGradient(ang - 1.1, C[0], C[1]); bg.addColorStop(0, "rgba(163,182,255,0)"); bg.addColorStop(1.1 / 6.283, `rgba(163,182,255,${.2 * beamOn})`); bg.addColorStop(1.1 / 6.283 + .001, "rgba(163,182,255,0)");
+    x.fillStyle = bg; x.beginPath(); x.arc(C[0], C[1], 480, 0, 6.29); x.arc(C[0], C[1], 250, 0, 6.29, true); x.fill("evenodd");
+    x.strokeStyle = `rgba(163,182,255,${.7 * beamOn})`; x.lineWidth = 2.5; x.beginPath(); x.moveTo(C[0] + Math.cos(ang) * 250, C[1] + Math.sin(ang) * 250); x.lineTo(C[0] + Math.cos(ang) * 480, C[1] + Math.sin(ang) * 480); x.stroke();
+  }
+  for (const st of SATS){
+    const a = st.a0 + st.w * t, px = C[0] + Math.cos(a) * st.R, py = C[1] + Math.sin(a) * st.R;
+    const appear = out3(seg(t, .5 + st.off * .9, 1.2 + st.off * .9));
+    const swept = ((ang - a) % 6.283 + 6.283) % 6.283 < .4 || t > 5.8;
+    const cleared = t > 2.2 && (t > 5.8 || (((a + 1.57) % 6.283 + 6.283) % 6.283) < (t - 2.2) * 6.283 / 3.2 - .05);
+    x.globalAlpha = appear;
+    if (!cleared){ x.shadowColor = "#efe9dc"; x.shadowBlur = 16; x.fillStyle = "#efe9dc"; x.beginPath(); x.arc(px, py, 6, 0, 6.29); x.fill(); x.shadowBlur = 0; }
+    else { x.fillStyle = "#06080d"; x.strokeStyle = "#3a4660"; x.lineWidth = 1.6; x.beginPath(); x.arc(px, py, 5.5, 0, 6.29); x.fill(); x.stroke(); }
+    x.globalAlpha = 1;
+  }
+}
+function render(t){
+  draw(t);
+  // mascot: flies in, scans, smiles when the orbit is clear
+  const inP = out3(seg(t, 0, 1.1)), bob = Math.sin(t * 2.2) * 8;
+  const m = document.getElementById("m"); m.style.transform = `translateY(${(1 - inP) * 120 + bob}px) scale(${.7 + .3 * inP})`; m.style.opacity = inP;
+  const pose = t < 2.0 ? "idle" : t < 5.7 ? "scan" : t < 6.2 ? "found" : "done";
+  for (const k of ["idle", "scan", "found", "done"]) document.getElementById("p-" + k).style.opacity = k === pose ? 1 : 0;
+  // terminal line
+  const n = Math.floor(clamp((t - 1.4) * 26, 0, CMD.length));
+  const doneLine = t > 5.8 ? "grok ❯ <em>73 sites cleared. community launched</em> <b>$NEWMOON</b>" : null;
+  document.getElementById("term").innerHTML = doneLine || (CMD.slice(0, n).replace("grok ❯", "grok <b>❯</b>").replace(/^(grok <b>❯<\/b>)(.*)$/, "$1<em>$2</em>") + (Math.floor(t * 2.2) % 2 ? "" : '<span class="caret"></span>'));
+  document.getElementById("term").style.opacity = seg(t, 1.2, 1.5);
+  // plate drops in with a bounce, then a shine sweeps across
+  const pl = back(seg(t, 6.2, 7.0)), plate = document.getElementById("plate");
+  plate.style.transform = `translateY(${(1 - pl) * -160}px) scale(${.85 + .15 * pl})`; plate.style.opacity = seg(t, 6.2, 6.5);
+  document.getElementById("shine").style.left = (-260 + seg(t, 7.2, 8.2) * 1200) + "px";
+  document.getElementById("tick").innerHTML = Math.floor(t * 2) % 2 ? '<i>●</i> LIVE' : '<i style="opacity:.3">●</i> LIVE';
+  for (const [id, a] of [["tag", 7.8], ["url", 8.4], ["disc", 8.8]]){ const e = document.getElementById(id), v = out3(seg(t, a, a + .5)); e.style.opacity = v; e.style.transform = `translateY(${(1 - v) * 24}px)`; }
+  document.getElementById("top").style.opacity = seg(t, .2, .8);
+  // fade out for a clean loop
+  document.getElementById("f").style.opacity = 1 - seg(t, DUR - .35, DUR);
+}
+window.DUR = DUR; window.render = render;
+window.ready = (async () => { await document.fonts.ready; await Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => i.onload = r))); render(0); return true; })();
+if (location.search.includes("play")) window.ready.then(() => { const s0 = performance.now(); const loop = n => { render(((n - s0) / 1000) % DUR); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+</script></body></html>

@@ -1,0 +1,174 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+html,body{margin:0;background:#05070b}
+#f{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:Geist,sans-serif;color:#e6eaf2}
+canvas{position:absolute;inset:0;width:1080px!important;height:1350px!important}
+.top{position:absolute;left:64px;right:64px;top:60px;display:flex;align-items:center;gap:14px;z-index:2}
+.top img{width:52px;height:52px}.top .w{font:700 36px Geist;letter-spacing:-.02em}.top .w span{color:#5d687d}
+.term{position:absolute;left:64px;right:64px;top:146px;font:500 26px "JetBrains Mono";color:#97a1b5;white-space:nowrap;z-index:2}
+.term b{color:#a3b6ff;font-weight:500}.term em{font-style:normal;color:#e6eaf2}
+.plate{position:absolute;left:90px;right:90px;top:960px;height:220px;border-radius:28px;border:3px solid #a3b6ff;background:linear-gradient(180deg,rgba(15,22,38,.92),rgba(10,15,25,.92));overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 8px rgba(163,182,255,.08),0 30px 120px -20px rgba(163,182,255,.5);z-index:2}
+.plate b{font:700 124px/1 Geist;letter-spacing:-.035em}.plate b span{color:#a3b6ff}
+.plate .shine{position:absolute;top:-20%;bottom:-20%;width:180px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transform:skewX(-20deg)}
+.plate .tick{position:absolute;left:28px;top:18px;font:500 20px "JetBrains Mono";color:#5d687d;letter-spacing:.14em}.plate .tick i{font-style:normal;color:#62d3a2}
+.plate .sol{position:absolute;right:28px;top:18px;font:500 20px "JetBrains Mono";color:#5d687d;letter-spacing:.14em}
+.url{position:absolute;left:0;right:0;top:1214px;display:flex;justify-content:center;z-index:2}
+.url div{background:#efe9dc;color:#06080d;font:600 28px "JetBrains Mono";border-radius:14px;padding:14px 26px}.url span{color:#4f63b8}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<div id="f">
+  <div class="top" id="top"><img src="logo.svg"><div class="w">NEW<span>MOON</span></div></div>
+  <div class="term" id="term"></div>
+  <div class="plate" id="plate"><span class="tick" id="tick"><i>●</i> LIVE</span><span class="sol">SOLANA</span><b><span>$</span>NEWMOON</b><i class="shine" id="shine"></i></div>
+  <div class="url" id="url"><div><span>$ </span>newmoon.website</div></div>
+</div>
+<script type="module">
+import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+const W = 1080, H = 1350, DUR = 13;
+const ACC = 0xa3b6ff, MOON = 0xefe9dc, OK = 0x62d3a2, DARK = 0x0b1018;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
+const ease = v => v < .5 ? 4*v*v*v : 1 - Math.pow(-2*v + 2, 3)/2, out3 = v => 1 - Math.pow(1 - v, 3);
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+document.getElementById("f").prepend(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05070b);
+const camera = new THREE.PerspectiveCamera(34, W / H, .1, 200);
+
+// ---- moon surface: an equirectangular albedo + bump map drawn on canvas
+function moonMaps(){
+  const w = 2048, h = 1024, a = document.createElement("canvas"), b = document.createElement("canvas");
+  a.width = b.width = w; a.height = b.height = h;
+  const g = a.getContext("2d"), k = b.getContext("2d");
+  g.fillStyle = "#d8d1c2"; g.fillRect(0, 0, w, h); k.fillStyle = "#808080"; k.fillRect(0, 0, w, h);
+  for (let i = 0; i < 46; i++){ // maria
+    const x = rnd() * w, y = h * (.25 + rnd() * .5), r = 60 + rnd() * 220;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, "rgba(120,114,104,.45)"); gr.addColorStop(1, "rgba(120,114,104,0)");
+    g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, r * 1.3, r, 0, 0, 6.29); g.fill();
+  }
+  for (let i = 0; i < 1600; i++){ // craters
+    const x = rnd() * w, y = rnd() * h, r = 2 + Math.pow(rnd(), 3.2) * 46;
+    g.fillStyle = "rgba(70,64,56,.14)"; g.beginPath(); g.arc(x + r*.15, y + r*.15, r, 0, 6.29); g.fill();
+    g.fillStyle = "rgba(255,250,240,.10)"; g.beginPath(); g.arc(x - r*.1, y - r*.1, r*.8, 0, 6.29); g.fill();
+    k.fillStyle = "rgba(30,30,30,.5)"; k.beginPath(); k.arc(x, y, r, 0, 6.29); k.fill();
+    k.strokeStyle = "rgba(230,230,230,.5)"; k.lineWidth = Math.max(1, r*.18); k.beginPath(); k.arc(x, y, r, 0, 6.29); k.stroke();
+  }
+  const id = g.getImageData(0, 0, w, h), d = id.data;
+  for (let i = 0; i < d.length; i += 4){ const n = (rnd() - .5) * 12; d[i] += n; d[i+1] += n; d[i+2] += n; }
+  g.putImageData(id, 0, 0);
+  const ta = new THREE.CanvasTexture(a); ta.colorSpace = THREE.SRGBColorSpace; ta.anisotropy = 8;
+  return [ta, new THREE.CanvasTexture(b)];
+}
+const [albedo, bump] = moonMaps();
+
+// ---- NEWMOON
+const bot = new THREE.Group(); scene.add(bot);
+const head = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 96), new THREE.MeshStandardMaterial({ map: albedo, bumpMap: bump, bumpScale: 1.3, roughness: .95, metalness: 0 }));
+head.rotation.y = -1.2; bot.add(head);
+const visor = new THREE.Mesh(new THREE.CapsuleGeometry(.27, .86, 12, 32), new THREE.MeshPhysicalMaterial({ color: DARK, roughness: .18, metalness: .3, clearcoat: 1, clearcoatRoughness: .08 }));
+visor.rotation.z = Math.PI / 2; visor.scale.set(1, 1, .42); visor.position.set(0, .06, .955); bot.add(visor);
+const glare = new THREE.Mesh(new THREE.CapsuleGeometry(.035, .5, 6, 16), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .035 }));
+glare.rotation.z = Math.PI / 2; glare.scale.set(1, 1, .4); glare.position.set(-.16, .19, 1.075); bot.add(glare);
+const eyeMat = new THREE.MeshBasicMaterial({ color: 0x9fb3ff, toneMapped: false });
+const pills = [-.27, .27].map(x => { const m = new THREE.Mesh(new THREE.CapsuleGeometry(.065, .13, 8, 16), eyeMat); m.position.set(x, .06, 1.07); bot.add(m); return m; });
+const happyMat = new THREE.MeshBasicMaterial({ color: OK, toneMapped: false });
+const happy = [-.27, .27].map(x => { const m = new THREE.Mesh(new THREE.TorusGeometry(.1, .032, 10, 32, Math.PI), happyMat); m.position.set(x, .02, 1.07); m.visible = false; bot.add(m); return m; });
+const mouth = new THREE.Mesh(new THREE.TorusGeometry(.17, .028, 10, 32, Math.PI * .62), new THREE.MeshStandardMaterial({ color: 0x23283a, roughness: .6 }));
+mouth.rotation.z = Math.PI + Math.PI * .19; mouth.position.set(-.03, -.3, .95); bot.add(mouth);
+const ringG = new THREE.Group(); ringG.rotation.set(Math.PI / 2 - .32, .1, -.3); bot.add(ringG);
+ringG.add(new THREE.Mesh(new THREE.TorusGeometry(1.55, .026, 16, 240), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: .85, toneMapped: false })));
+const moonlet = new THREE.Mesh(new THREE.SphereGeometry(.085, 24, 16), new THREE.MeshBasicMaterial({ color: MOON })); ringG.add(moonlet);
+
+// ---- the 73 sites in orbit
+const field = new THREE.Group(); field.rotation.set(.42, 0, -.08); scene.add(field);
+const ORB = [1.95, 2.35, 2.75], COUNT = [16, 29, 28], sats = [];
+ORB.forEach((R, ri) => { for (let j = 0; j < COUNT[ri]; j++){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(ri ? .024 : .032, 12, 8), new THREE.MeshBasicMaterial({ color: MOON }));
+  const a0 = j / COUNT[ri] * Math.PI * 2 + ri * .4; field.add(m); sats.push({ m, R, a0, w: [.12, -.08, .05][ri], d: rnd() });
+} });
+ORB.forEach((R, i) => { const c = new THREE.Mesh(new THREE.TorusGeometry(R, .004, 6, 256), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: .16 - i * .03 })); c.rotation.x = Math.PI / 2; field.add(c); });
+const beam = new THREE.Mesh(new THREE.RingGeometry(1.2, 2.95, 64, 1, 0, .9), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, opacity: .05, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+beam.rotation.x = -Math.PI / 2;
+const beamLine = new THREE.Mesh(new THREE.BoxGeometry(1.75, .012, .012), new THREE.MeshBasicMaterial({ color: ACC, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+field.add(beamLine);
+
+// ---- stars and light
+const sg = new THREE.BufferGeometry(), sp = [];
+for (let i = 0; i < 1800; i++){ const v = new THREE.Vector3(rnd()*2-1, rnd()*2-1, rnd()*2-1).normalize().multiplyScalar(40 + rnd()*30); sp.push(v.x, v.y, v.z); }
+sg.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3));
+scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xc8d0e6, size: .09, sizeAttenuation: true, transparent: true, opacity: .8 })));
+scene.add(new THREE.AmbientLight(0x8090c0, .05));
+const sun = new THREE.DirectionalLight(0xfff6e8, 3.4); scene.add(sun); scene.add(sun.target);
+const rim = new THREE.DirectionalLight(ACC, .35); rim.position.set(3, 2, -4); scene.add(rim);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), .55, .45, .8));
+composer.addPass(new OutputPass());
+
+const CMD = "grok ❯ scanning 73 sites for your number";
+function render(t){
+  // camera: slow dolly in and a gentle arc
+  const ci = out3(seg(t, 0, 2.6)), arc = -.25 + t * .035;
+  const dist = 11.5 - 3.6 * ci;
+  camera.position.set(Math.sin(arc) * dist, .35 + .25 * (1 - ci), Math.cos(arc) * dist);
+  camera.lookAt(0, .55, 0);
+  // the bot floats; the head turns slowly so the craters move
+  bot.position.set(0, .95 + Math.sin(t * 1.6) * .06, 0);
+  bot.rotation.set(Math.sin(t * .9) * .04, Math.sin(t * .6) * .12 + arc, 0);
+  head.rotation.y = -1.2 + t * .08;
+  // phase: the light swings from behind the camera to behind the moon as sites clear
+  const phase = .25 + 2.75 * ease(seg(t, 2.6, 9.2));
+  const view = new THREE.Vector3().subVectors(camera.position, bot.position).normalize();
+  const side = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), view).normalize().multiplyScalar(-1);
+  sun.position.copy(bot.position).addScaledVector(view, Math.cos(phase) * 10).addScaledVector(side, Math.sin(phase) * 10).add(new THREE.Vector3(0, 2.5, 0));
+  sun.target.position.copy(bot.position);
+  // eyes: blink, scan, then happy
+  const blink = Math.max(1 - seg(t, 1.3, 1.38) + seg(t, 1.38, 1.48), 0) ;
+  const isHappy = t > 8.4;
+  pills.forEach((m, i) => { m.visible = !isHappy; m.scale.y = t < 1.48 && t > 1.3 ? Math.max(.12, Math.abs(1 - seg(t, 1.3, 1.48) * 2)) : 1;
+    m.position.x = (i ? .27 : -.27) + (t > 2.6 && t < 8.2 ? Math.sin((t - 2.6) * 3.2) * .1 : 0); });
+  const hp = out3(seg(t, 8.4, 8.8));
+  happy.forEach(m => { m.visible = isHappy; m.scale.setScalar(.4 + .6 * hp); });
+  moonlet.position.set(Math.cos(t * .9) * 1.55, Math.sin(t * .9) * 1.55, 0);
+  // the field: sites fade in, the beam sweeps, swept sites go dark
+  field.rotation.y = t * .05;
+  const sweep = t < 2.8 ? -1 : (t - 2.8) * Math.PI * 2 / 2.6;
+  const bOn = seg(t, 2.6, 3.0) * (1 - seg(t, 9.0, 9.4));
+  beam.visible = beamLine.visible = bOn > 0; beam.material.opacity = .05 * bOn; beamLine.material.opacity = .9 * bOn;
+  beam.rotation.z = sweep - .9;
+  beamLine.position.set(Math.cos(sweep) * 2.075, 0, -Math.sin(sweep) * 2.075); beamLine.rotation.set(0, sweep, 0);
+  for (const s of sats){
+    const a = s.a0 + s.w * t; s.m.position.set(Math.cos(a) * s.R, 0, -Math.sin(a) * s.R);
+    s.m.scale.setScalar(out3(seg(t, .4 + s.d * 1.4, 1.0 + s.d * 1.4)) || .0001);
+    const clearedAt = 2.8 + (s.d * .6 + (((a % 6.283) + 6.283) % 6.283) / 6.283) * 5.6;
+    const cleared = t > Math.min(clearedAt, 9.0);
+    s.m.material.color.setHex(cleared ? 0x252d3d : MOON);
+  }
+  composer.render();
+  // overlay
+  const n = Math.floor(clamp((t - 1.0) * 26, 0, CMD.length));
+  const term = document.getElementById("term");
+  term.innerHTML = t > 9.0 ? "grok <b>❯</b> <em>73 sites cleared. new moon.</em>" : CMD.slice(0, n).replace("grok ❯", "grok <b>❯</b>") ;
+  term.style.opacity = seg(t, .9, 1.2);
+  document.getElementById("top").style.opacity = seg(t, .2, .8);
+  const pl = seg(t, 9.6, 10.4), bk = 1 + 2.7 * Math.pow(pl - 1, 3) + 1.7 * Math.pow(pl - 1, 2);
+  const plate = document.getElementById("plate"); plate.style.opacity = seg(t, 9.6, 9.9); plate.style.transform = `translateY(${(1 - bk) * 140}px) scale(${.86 + .14 * bk})`;
+  document.getElementById("shine").style.left = (-260 + seg(t, 10.6, 11.6) * 1200) + "px";
+  document.getElementById("tick").innerHTML = Math.floor(t * 2) % 2 ? "<i>●</i> LIVE" : '<i style="opacity:.3">●</i> LIVE';
+  const u = out3(seg(t, 10.8, 11.3)), url = document.getElementById("url"); url.style.opacity = u; url.style.transform = `translateY(${(1 - u) * 24}px)`;
+  document.getElementById("f").style.opacity = 1 - seg(t, DUR - .35, DUR);
+}
+window.DUR = DUR; window.render = render;
+window.ready = (async () => { await document.fonts.ready; render(0); return true; })();
+if (location.search.includes("play")) window.ready.then(() => { const s0 = performance.now(); const loop = n => { render(((n - s0) / 1000) % DUR); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+</script></body></html>

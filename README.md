@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://newmoon.tools"><img src="assets/banner.png" alt="newmoon: your number, off the lists. 73 sites, 6 Grok Bots, rechecks every new moon, $0" width="100%"></a>
+  <a href="https://www.newmoon.website"><img src="assets/banner.png" alt="newmoon: your number, off the lists. 73 sites, 6 Grok Bots, rechecks every new moon, $0" width="100%"></a>
 </p>
 
 <p align="center">
@@ -11,8 +11,8 @@
 </p>
 
 <p align="center">
-  <b><a href="https://newmoon.tools">Open Newmoon</a></b> &nbsp;·&nbsp;
-  <a href="https://newmoon.tools/docs.html">Docs</a> &nbsp;·&nbsp;
+  <b><a href="https://www.newmoon.website">Open Newmoon</a></b> &nbsp;·&nbsp;
+  <a href="https://www.newmoon.website/docs.html">Docs</a> &nbsp;·&nbsp;
   <a href="kit/00-main-prompt.txt">Main prompt</a> &nbsp;·&nbsp;
   <a href="#-the-sites">All 73 sites</a> &nbsp;·&nbsp;
   <a href="#-self-hosting">Self-host</a>
@@ -45,7 +45,7 @@ The recheck runs on the real lunar cycle, every 29.5 days, so data brokers that 
 
 ## 🌒 Quickstart
 
-1. **Scan.** Open [Newmoon](https://newmoon.tools), type your name, city and state, press **find me with Grok**. Grok opens with a search prompt for the 15 biggest people-search sites and tells you where you're listed.
+1. **Scan.** Open [Newmoon](https://www.newmoon.website), type your name, city and state, press **find me with Grok**. Grok opens with a search prompt for the 15 biggest people-search sites and tells you where you're listed.
 2. **Plan.** In the planner, add the phone number and a spare inbox for opt-outs, and pick a depth: 11, 16, 45 or 73 sites.
 3. **Run.** Paste the main prompt into a Grok Bot skill called `newmoon`, add [`routines.yml`](kit/routines.yml), say `start`.
 
@@ -267,6 +267,7 @@ The mascot's mood follows your plan: scanning while Scout searches, amber when i
 
 ## Credits
 
+- Site list adapted from **[BADBOOL](https://github.com/yaelwrites/Big-Ass-Data-Broker-Opt-Out-List)** by Yael Grauer, CC BY-NC-SA 4.0. If it helps you, [buy her a coffee](https://ko-fi.com/kofisupporter11745).
 - Built on **Grok** and **Grok Bot** by xAI. Newmoon is independent and not affiliated with or endorsed by xAI.
 - Made by [@lunarresearcher](https://x.com/lunarresearcher).
 
