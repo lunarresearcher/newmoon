@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0;background:#07090e}
+body{width:1600px;height:600px;overflow:hidden;position:relative;color:#e6eaf2;font-family:Geist,sans-serif}
+.l{position:absolute;left:96px;top:86px;width:820px}
+.mk{display:flex;align-items:center;gap:14px;font:600 34px Geist;letter-spacing:-.03em}
+.pw{font:500 16px "JetBrains Mono";color:#97a1b5;border:1.5px solid #273144;border-radius:999px;padding:8px 14px;margin-left:10px}
+.pw b{color:#e6eaf2;font-weight:600}
+h1{font:600 112px/.92 Geist;letter-spacing:-.05em;margin:54px 0 0}
+h1 span{color:#5d687d}
+.f{position:absolute;left:96px;bottom:78px;font:500 21px "JetBrains Mono";color:#97a1b5;display:flex;gap:30px}
+.f b{color:#e6eaf2;font-weight:500}
+.f i{font-style:normal;color:#273144}
+canvas{position:absolute;right:30px;top:-10px;width:620px;height:620px}
+</style></head><body>
+<div class="l">
+  <div class="mk"><svg width="34" height="34" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.25" fill="#07090e" stroke="#efe9dc" stroke-width="1.5"/><path d="M11 1.75a9.25 9.25 0 0 0 0 18.5a6 9.25 0 0 1 0-18.5z" fill="#efe9dc" opacity=".18"/></svg>newmoon<span class="pw">powered by <b>Grok</b></span></div>
+  <h1>Your number,<br><span>off the</span> lists.</h1>
+</div>
+<div class="f"><span><b>73</b> sites</span><i>/</i><span><b>6</b> Grok Bots</span><i>/</i><span>rechecks every <b>new moon</b></span><i>/</i><span><b>$0</b></span></div>
+<canvas id="c" width="1240" height="1240"></canvas>
+<script src="_moon.js"></script>
+<script>
+window.ready = (async () => {
+  await document.fonts.ready;
+  const cv = document.getElementById("c"), x = cv.getContext("2d"), S = cv.width, C = S/2, TAU = Math.PI*2;
+  const mc = document.createElement("canvas"); mc.width = mc.height = Math.round(S*.6); drawMoon(mc, .62, true);
+  const MR = mc.width*.36, rings = [S*.29, S*.365, S*.44], counts = [16, 29, 28];
+  const r = rng(7);
+  x.lineWidth = 2;
+  rings.forEach((R, i) => { x.strokeStyle = i === 2 ? "rgba(163,182,255,.12)" : "rgba(151,161,181,.14)"; x.setLineDash(i === 2 ? [5,12] : []); x.beginPath(); x.arc(C,C,R,0,TAU); x.stroke(); });
+  x.setLineDash([]);
+  const sw = -0.75;
+  const g = x.createConicGradient(sw - 1, C, C); g.addColorStop(0,"rgba(163,182,255,0)"); g.addColorStop(1/TAU,"rgba(163,182,255,.18)"); g.addColorStop(1/TAU+.001,"rgba(163,182,255,0)");
+  x.fillStyle = g; x.beginPath(); x.arc(C,C,rings[2]+28,0,TAU); x.arc(C,C,MR,0,TAU,true); x.fill("evenodd");
+  x.strokeStyle = "rgba(163,182,255,.5)"; x.beginPath(); x.moveTo(C+Math.cos(sw)*MR, C+Math.sin(sw)*MR); x.lineTo(C+Math.cos(sw)*(rings[2]+28), C+Math.sin(sw)*(rings[2]+28)); x.stroke();
+  x.drawImage(mc, C-mc.width/2, C-mc.height/2);
+  rings.forEach((R, ri) => { for (let j = 0; j < counts[ri]; j++){
+    const a = j/counts[ri]*TAU + ri*.41, px = C+Math.cos(a)*R, py = C+Math.sin(a)*R, v = r();
+    const st = v < .45 ? "lit" : v < .58 ? "warn" : v < .72 ? "filed" : "done";
+    const rad = ri === 0 ? 10 : 8;
+    if (st === "lit" || st === "warn"){ x.shadowColor = st === "lit" ? "#efe9dc" : "#e9b45b"; x.shadowBlur = 18; }
+    x.fillStyle = st === "lit" ? "#efe9dc" : st === "warn" ? "#e9b45b" : st === "filed" ? "#a3b6ff" : "#07090e";
+    x.beginPath(); x.arc(px,py,rad,0,TAU); x.fill(); x.shadowBlur = 0;
+    if (st === "done"){ x.strokeStyle = "#3a4660"; x.lineWidth = 2; x.stroke(); }
+    if (st === "filed"){ x.fillStyle = "#07090e"; x.beginPath(); x.arc(px,py,rad,-Math.PI/2,Math.PI/2); x.fill(); }
+  }});
+  x.font = '500 24px "JetBrains Mono"'; x.fillStyle = "#e6eaf2"; x.textBaseline = "middle";
+  const la = sw + .05; x.fillText("Whitepages", C+Math.cos(la)*rings[0]+20, C+Math.sin(la)*rings[0]-6);
+  return true;
+})();
+</script></body></html>

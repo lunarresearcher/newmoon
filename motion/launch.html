@@ -1,0 +1,224 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>html,body{margin:0;background:#07090e}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1350"></canvas>
+<script src="_moon.js"></script>
+<script>
+// Newmoon launch film. render(t) is a pure function of time in seconds, so every frame is reproducible.
+const DOMAIN = new URLSearchParams(location.search).get("domain") || "newmoon.tools";
+const DUR = 23.5;
+const W = 1080, H = 1350, C = document.getElementById("c"), X = C.getContext("2d");
+const COL = {bg:"#07090e", panel:"#0b1018", raise:"#111827", line:"#1b2331", line2:"#273144", text:"#e6eaf2", mute:"#97a1b5", dim:"#5d687d", moon:"#efe9dc", accent:"#a3b6ff", ok:"#62d3a2", warn:"#e9b45b"};
+const D = "Geist, Helvetica, Arial, sans-serif", M = "'JetBrains Mono', Menlo, monospace";
+let SITES = [];
+
+const clamp = (v,a=0,b=1) => Math.max(a, Math.min(b, v));
+const seg = (t,a,b) => clamp((t-a)/(b-a));
+const out3 = x => 1 - Math.pow(1-x, 3);
+const inout = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
+const back = x => { const c = 1.6; return 1 + (c+1)*Math.pow(x-1,3) + c*Math.pow(x-1,2); };
+const lerp = (a,b,x) => a + (b-a)*x;
+
+function txt(s, x, y, size, opts = {}){
+  X.save();
+  X.globalAlpha *= opts.a ?? 1;
+  X.font = `${opts.w || 500} ${size}px ${opts.f || D}`;
+  X.fillStyle = opts.c || COL.text;
+  X.textAlign = opts.al || "left"; X.textBaseline = opts.bl || "alphabetic";
+  if (opts.ls) X.letterSpacing = opts.ls + "px";
+  X.fillText(s, x, y);
+  const w = X.measureText(s).width; X.restore(); return w;
+}
+function rr(x, y, w, h, r, fill, stroke, a = 1, dash){
+  X.save(); X.globalAlpha *= a; X.beginPath(); X.roundRect(x, y, w, h, r);
+  if (fill){ X.fillStyle = fill; X.fill(); }
+  if (stroke){ X.strokeStyle = stroke; X.lineWidth = 2; if (dash) X.setLineDash(dash); X.stroke(); }
+  X.restore();
+}
+function chip(x, y, label, color, a = 1, w = 196){
+  rr(x, y, w, 46, 8, COL.bg, COL.line2, a);
+  X.save(); X.globalAlpha *= a; X.fillStyle = color; X.fillRect(x+18, y+19, 9, 9); X.restore();
+  txt(label.toUpperCase(), x+38, y+30, 16, {f:M, c:color, a, ls:2});
+}
+const moonCv = document.createElement("canvas"); moonCv.width = moonCv.height = 900;
+function moon(cx, cy, size, k, a = 1){
+  drawMoon(moonCv, clamp(k), true);
+  X.save(); X.globalAlpha *= a; X.drawImage(moonCv, cx - size/2, cy - size/2, size, size); X.restore();
+}
+function typed(s, t, a, cps = 16){ return s.slice(0, Math.floor(clamp((t - a) * cps, 0, s.length))); }
+function caret(x, y, h, t){ if (Math.floor(t*2.2) % 2 === 0){ X.fillStyle = COL.accent; X.fillRect(x+3, y-h+4, 12, h); } }
+
+// layout of the 73-name wall, computed once
+let WALL = [];
+function layoutWall(){
+  X.font = `500 23px ${M}`;
+  let x = 70, y = 440; const gap = 24, lh = 41;
+  WALL = SITES.map((s, i) => {
+    const w = X.measureText(s).width;
+    if (x + w > W - 70){ x = 70; y += lh; }
+    const r = {s, x, y, w, i}; x += w + gap; return r;
+  });
+}
+
+const SCAN = [
+  {s:"Whitepages", d:"phone + home address", hit:1},
+  {s:"Spokeo", d:"phone, age, relatives", hit:1},
+  {s:"BeenVerified", d:"phone + 2 old addresses", hit:1},
+  {s:"Truecaller", d:"name on your number", hit:1},
+  {s:"FastPeopleSearch", d:"searched 3 ways", hit:0},
+  {s:"Intelius", d:"phone only", hit:1},
+  {s:"MyLife", d:"profile + address", hit:1},
+  {s:"That's Them", d:"searched 3 ways", hit:0}
+];
+const CREW = ["scout","filer","clerk","registry","watch","ledger"];
+
+function render(t){
+  X.setTransform(1,0,0,1,0,0); X.globalAlpha = 1;
+  X.fillStyle = COL.bg; X.fillRect(0,0,W,H);
+
+  /* --- top bar, always on --- */
+  const barA = 1;
+  txt("newmoon", 112, 92, 34, {w:600, a:barA});
+  X.save(); X.globalAlpha = barA; X.strokeStyle = COL.moon; X.lineWidth = 2.5; X.beginPath(); X.arc(86, 81, 15, 0, Math.PI*2); X.stroke(); X.restore();
+  rr(278, 60, 210, 42, 21, null, COL.line2, barA);
+  txt("powered by", 298, 87, 17, {f:M, c:COL.mute, a:barA}); txt("Grok", 418, 87, 17, {f:M, w:600, a:barA});
+  txt("@lunarresearcher", W-70, 87, 18, {f:M, c:COL.dim, al:"right", a:barA});
+
+  /* --- scene 1: hook + wall of sites (0 – 3.4) --- */
+  const s1out = seg(t, 3.1, 3.7);
+  if (t < 3.8){
+    const a = 1 - s1out;
+    const l1 = out3(seg(t, -.5, .2)), l2 = out3(seg(t, -.2, .45));
+    txt("Where do spam callers", 70, 250 - 20*(1-l1), 74, {w:600, a:a*l1, ls:-2});
+    txt("get your number?", 70, 340 - 20*(1-l2), 74, {w:600, a:a*l2, c:COL.dim, ls:-2});
+    for (const r of WALL){
+      const st = .6 + r.i*.024, p = seg(t, st, st+.25);
+      if (p <= 0) continue;
+      txt(r.s, r.x, r.y + 10*(1-out3(p)), 23, {f:M, c:COL.moon, a:a*p*.92});
+    }
+    const n = Math.round(73 * out3(seg(t, .8, 2.7)));
+    const ca = seg(t, .8, 1.1) * a;
+    txt(String(n), 70, 1262, 120, {w:600, a:ca, ls:-4});
+    txt("PEOPLE-SEARCH SITES", 70 + (n>9?150:80), 1212, 20, {f:M, c:COL.dim, a:ca, ls:3});
+    txt("SHOWING PHONE NUMBERS", 70 + (n>9?150:80), 1244, 20, {f:M, c:COL.dim, a:ca, ls:3});
+  }
+
+  /* --- scene 2: type your name (3.4 – 7.2) --- */
+  if (t > 3.3 && t < 7.6){
+    const inA = out3(seg(t, 3.4, 4.0)), outA = seg(t, 7.0, 7.5), a = inA * (1 - outA);
+    const y0 = 330 + 60*(1-inA);
+    txt("So I built Newmoon.", 70, 250, 74, {w:600, a, ls:-2});
+    rr(70, y0, W-140, 640, 22, COL.panel, COL.line2, a);
+    txt("// start with your name", 104, y0+56, 21, {f:M, c:COL.dim, a});
+    txt("stays in your browser", W-104, y0+56, 21, {f:M, c:COL.dim, a, al:"right"});
+    X.save(); X.globalAlpha = a; X.fillStyle = COL.line; X.fillRect(70, y0+86, W-140, 2); X.restore();
+    const fields = [["First name","Jordan",104,y0+130,4.2],["Last name","Avery",560,y0+130,4.75],["City","Austin",104,y0+290,5.2],["State","TX",560,y0+290,5.65]];
+    for (const [lab, val, fx, fy, ts] of fields){
+      txt(lab, fx, fy, 22, {f:M, c:COL.mute, a});
+      const active = t >= ts - .05 && t < ts + .5;
+      rr(fx, fy+22, 416, 86, 12, COL.bg, active ? COL.accent : COL.line2, a);
+      const s = typed(val, t, ts, 14);
+      const w = txt(s || "", fx+24, fy+80, 34, {a});
+      if (active) caret(fx+24+w, fy+80, 36, t);
+    }
+    // button
+    const press = seg(t, 6.25, 6.4) - seg(t, 6.45, 6.65);
+    const bx = 104, by = y0+470, bw = 460, bh = 96, sc = 1 - .05*press;
+    X.save(); X.globalAlpha = a; X.translate(bx + bw/2, by + bh/2); X.scale(sc, sc); X.translate(-(bx + bw/2), -(by + bh/2));
+    if (t > 6.3){ X.shadowColor = "rgba(239,233,220,.55)"; X.shadowBlur = 50 * (1 - seg(t, 6.4, 7.2)); }
+    rr(bx, by, bw, bh, 14, COL.moon); X.shadowBlur = 0;
+    txt("▸", bx+36, by+61, 30, {f:M, c:"#4f63b8"}); txt("find me with Grok", bx+80, by+61, 31, {f:M, w:600, c:COL.bg});
+    X.restore();
+    // pointer
+    const pa = seg(t, 5.9, 6.2) * a, px = lerp(900, bx+bw-90, out3(seg(t, 5.9, 6.25))), py = lerp(y0+700, by+70, out3(seg(t, 5.9, 6.25)));
+    if (pa > 0){ X.save(); X.globalAlpha = pa; X.translate(px, py); X.scale(1.6 - .1*press, 1.6 - .1*press); X.fillStyle = COL.text; X.strokeStyle = COL.bg; X.lineWidth = 1.5;
+      X.beginPath(); X.moveTo(0,0); X.lineTo(0,26); X.lineTo(7,20); X.lineTo(12,31); X.lineTo(16,29); X.lineTo(11,18); X.lineTo(20,18); X.closePath(); X.fill(); X.stroke(); X.restore(); }
+  }
+
+  /* --- scene 3 + 4: scan, then take it down (7.2 – 18.6) --- */
+  if (t > 7.1 && t < 19.4){
+    const inA = out3(seg(t, 7.2, 7.8)), outA = seg(t, 18.4, 19.2), a = inA * (1 - outA);
+    const s4 = inout(seg(t, 10.6, 11.6));            // panel slides down to make room for the moon
+    const head = t < 11 ? "Grok finds where you're listed." : "Then six Grok Bots take it down.";
+    const hA = t < 11 ? a * (1 - seg(t, 10.5, 10.9)) : a * seg(t, 11.0, 11.5);
+    txt(head, 70, 250, 60, {w:600, a:hA, ls:-1.5});
+    // moon appears in scene 4
+    const removedAt = i => 13.0 + i*.62;
+    const hits = SCAN.map((r, i) => r.hit ? i : -1).filter(i => i >= 0);
+    let up = 0; for (const i of hits) if (t < removedAt(hits.indexOf(i)) + .2) up++;
+    let k = 0; for (let j = 0; j < hits.length; j++){ const filedP = seg(t, 11.6 + j*.42, 11.9 + j*.42), remP = seg(t, removedAt(j), removedAt(j)+.4); k += 1 - .45*filedP - .55*remP; }
+    k /= hits.length;
+    if (s4 > 0) moon(W/2 + 250, 470 - 30*(1-s4), 420, k, a * s4);
+    if (s4 > 0){
+      txt(String(up), 70, 470, 150, {w:600, a:a*s4, ls:-5});
+      txt("LISTINGS STILL UP", 76, 520, 20, {f:M, c:COL.dim, a:a*s4, ls:3});
+      // crew strip
+      CREW.forEach((b, i) => {
+        const on = t > 11.5 && Math.floor((t - 11.5) * 2.4) % 6 === i && t < 17.6;
+        const bx = 70 + i*157, by = 580;
+        rr(bx, by, 145, 50, 9, on ? "#141c30" : COL.raise, on ? COL.accent : COL.line, a*s4);
+        txt(`0${i+1}`, bx+14, by+32, 15, {f:M, c:COL.dim, a:a*s4}); txt(b, bx+46, by+32, 18, {f:M, c:on ? COL.text : COL.mute, a:a*s4});
+      });
+    }
+    const py = lerp(330, 680, s4), rowH = lerp(96, 64, s4);
+    rr(70, py, W-140, 76 + rowH*8 + 24, 22, COL.panel, COL.line2, a);
+    const cmd = `grok ❯ scanning people-search sites for Jordan Avery, Austin TX`;
+    const nAp = Math.min(6, Math.floor(seg(t, 11.6, 14.2) * 6.99));
+    if (s4 < .5) txt(typed(cmd, t, 7.5, 70), 104, py+50, 20, {f:M, c:COL.mute, a: a*(1 - s4*2)});
+    else { const aa = a*(s4*2 - 1); const w = txt("❯ approve? [y/N]", 104, py+50, 22, {f:M, c:COL.accent, a:aa}); if (nAp) txt(`y ✓   ${nAp}/6 approved by you`, 104 + w + 24, py+50, 22, {f:M, c:COL.ok, a:aa}); }
+    SCAN.forEach((r, i) => {
+      const st = 8.0 + i*.32, p = out3(seg(t, st, st+.3));
+      if (p <= 0) return;
+      const y = py + 80 + i*rowH, ra = a*p;
+      X.save(); X.globalAlpha = ra; X.fillStyle = COL.line; X.fillRect(104, y, W-208, 2); X.restore();
+      txt(r.s, 104 + 16*(1-p), y + rowH*.55, lerp(34, 30, s4), {w:500, a:ra});
+      if (s4 < 1) txt(r.d, 104, y + rowH*.55 + 30, 19, {f:M, c:COL.dim, a:ra*(1-s4)});
+      let label = r.hit ? "listed" : "not listed", color = r.hit ? COL.moon : COL.dim;
+      if (r.hit){
+        const j = hits.indexOf(i);
+        if (t > 11.6 + j*.42) { label = "filed"; color = COL.accent; }
+        if (t > removedAt(j)) { label = "removed"; color = COL.ok; }
+      }
+      const pop = r.hit ? back(seg(t, removedAt(hits.indexOf(i)), removedAt(hits.indexOf(i)) + .35)) : 0;
+      X.save(); const cx = W-104-230 + 115, cy = y + rowH*.5;
+      if (pop > 0 && pop < 1.2){ X.translate(cx, cy); X.scale(1 + .08*Math.sin(pop*Math.PI), 1 + .08*Math.sin(pop*Math.PI)); X.translate(-cx, -cy); }
+      chip(W-104-230, y + rowH*.5 - 23, label, color, ra, 230); X.restore();
+    });
+  }
+
+  /* --- scene 5: end card (18.8 – 23.5) --- */
+  if (t > 18.6){
+    const a = out3(seg(t, 18.8, 19.6));
+    const mk = 0; moon(W/2, 470, 520 + 30*inout(seg(t, 18.8, 23.5)), mk, a);
+    const l1 = out3(seg(t, 19.6, 20.1)), l2 = out3(seg(t, 20.0, 20.5));
+    txt("$0.", W/2, 860 - 18*(1-l1), 150, {w:600, al:"center", a:l1, ls:-6});
+    txt("Not $129 a year.", W/2, 970 - 18*(1-l2), 84, {w:600, al:"center", a:l2, c:COL.dim, ls:-3});
+    const e = out3(seg(t, 20.8, 21.4));
+    rr(W/2 - 270, 1080 + 20*(1-e), 540, 100, 16, COL.moon, null, e);
+    txt("$", W/2 - 222, 1143 + 20*(1-e), 32, {f:M, c:"#4f63b8", a:e});
+    txt(DOMAIN, W/2 + 18, 1143 + 20*(1-e), 36, {f:M, w:600, c:COL.bg, al:"center", a:e});
+    txt("type your name  →  find me with Grok", W/2, 1240, 22, {f:M, c:COL.dim, al:"center", a:seg(t, 21.4, 21.9)});
+  }
+
+  // vignette + fade out of the last 0.4s for a clean loop
+  const v = X.createRadialGradient(W/2, H/2, H*.45, W/2, H/2, H*.8);
+  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.35)");
+  X.fillStyle = v; X.fillRect(0,0,W,H);
+  const fo = seg(t, DUR - .4, DUR);
+  if (fo > 0){ X.fillStyle = `rgba(7,9,14,${fo})`; X.fillRect(0,0,W,H); }
+}
+
+window.ready = (async () => {
+  SITES = await (await fetch("_sites.json")).json().catch(() => []);
+  await Promise.all([`600 74px Geist`, `500 25px 'JetBrains Mono'`, `600 31px 'JetBrains Mono'`, `500 34px Geist`, `400 20px 'JetBrains Mono'`].map(f => document.fonts.load(f)));
+  await document.fonts.ready;
+  layoutWall(); texture(); render(0);
+  return true;
+})();
+window.render = render; window.DUR = DUR;
+// preview mode: open launch.html?play to watch it loop in a browser
+if (location.search.includes("play")) window.ready.then(() => { const t0 = performance.now(); const loop = n => { render(((n - t0)/1000) % DUR); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+</script>
+</body></html>

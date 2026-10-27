@@ -1,0 +1,75 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>html,body{margin:0;background:transparent}#stage{width:1024px;height:1024px}svg{display:block}</style></head><body>
+<div id="stage"></div>
+<script>
+// NEWMOON, the mascot. A waning moon with a visor for a face and an orbit ring.
+const P = {bg:"#07090e", panel:"#0b1018", line:"#273144", moon:"#efe9dc", moon2:"#cfc7b6", shade:"#1a2030", acc:"#a3b6ff", ok:"#62d3a2", warn:"#e9b45b"};
+function eyes(pose){
+  const L = 425, R = 600, Y = 535;
+  const glow = c => `fill="${c}" filter="url(#glow)"`;
+  switch (pose){
+    case "scan": return `<rect x="335" y="${Y-14}" width="330" height="28" rx="14" fill="url(#beam)" filter="url(#glow)"/>
+      <rect x="520" y="${Y-30}" width="40" height="60" rx="20" ${glow(P.acc)}/>`;
+    case "found": return `<circle cx="${L}" cy="${Y}" r="34" ${glow(P.warn)}/><circle cx="${R}" cy="${Y}" r="34" ${glow(P.warn)}/>
+      <circle cx="${L+8}" cy="${Y-8}" r="9" fill="#fff8e6"/><circle cx="${R+8}" cy="${Y-8}" r="9" fill="#fff8e6"/>`;
+    case "done": return `<path d="M${L-38} ${Y+18} L${L} ${Y-22} L${L+38} ${Y+18}" stroke="${P.ok}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)"/>
+      <path d="M${R-38} ${Y+18} L${R} ${Y-22} L${R+38} ${Y+18}" stroke="${P.ok}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow)"/>`;
+    case "sleep": return `<rect x="${L-36}" y="${Y-6}" width="72" height="12" rx="6" fill="${P.acc}" opacity=".45"/><rect x="${R-36}" y="${Y-6}" width="72" height="12" rx="6" fill="${P.acc}" opacity=".45"/>`;
+    default: return `<rect x="${L-26}" y="${Y-40}" width="52" height="80" rx="26" ${glow(P.acc)}/><rect x="${R-26}" y="${Y-40}" width="52" height="80" rx="26" ${glow(P.acc)}/>
+      <rect x="${L-10}" y="${Y-28}" width="16" height="24" rx="8" fill="#e8eeff"/><rect x="${R-10}" y="${Y-28}" width="16" height="24" rx="8" fill="#e8eeff"/>`;
+  }
+}
+function mouth(pose){
+  const c = "#2a2f3d";
+  if (pose === "found") return `<ellipse cx="505" cy="690" rx="22" ry="26" fill="${c}"/>`;
+  if (pose === "done") return `<path d="M450 672 Q505 728 560 672" stroke="${c}" stroke-width="16" stroke-linecap="round" fill="none"/>`;
+  if (pose === "sleep") return `<path d="M478 690 Q505 700 532 690" stroke="${c}" stroke-width="12" stroke-linecap="round" fill="none" opacity=".6"/>`;
+  return `<path d="M440 684 Q490 712 530 676" stroke="${c}" stroke-width="15" stroke-linecap="round" fill="none"/>`;
+}
+function svg(pose, opts = {}){
+  const k = pose === "sleep" ? 0.04 : pose === "done" ? 0.3 : 0.62;   // how much of the face is lit
+  const cx = 512, cy = 545, r = 300, rx = r*Math.abs(2*k-1);
+  // shadow = the dark part on the right; lit part keeps the left side, like a waning moon
+  const term = k > .5 ? `A${rx} ${r} 0 0 0 ${cx} ${cy-r}` : `A${rx} ${r} 0 0 1 ${cx} ${cy-r}`;
+  const shadow = `M${cx} ${cy-r} A${r} ${r} 0 0 1 ${cx} ${cy+r} ${term} Z`;
+  const ring = (half) => `<ellipse cx="${cx}" cy="${cy+10}" rx="440" ry="105" transform="rotate(-16 ${cx} ${cy})" fill="none" stroke="${P.acc}" stroke-opacity=".55" stroke-width="12" clip-path="url(#${half})"/>`;
+  const sat = pose === "sleep" ? P.line : P.moon;
+  const th = -16*Math.PI/180, t = 0.62;   // satellite sits on the front of the ring
+  const satX = cx + 440*Math.cos(t)*Math.cos(th) - 105*Math.sin(t)*Math.sin(th), satY = cy + 10 + 440*Math.cos(t)*Math.sin(th) + 105*Math.sin(t)*Math.cos(th);
+  const bg = opts.bg ? `<rect width="1024" height="1024" fill="${P.bg}"/><circle cx="512" cy="512" r="512" fill="url(#bgg)"/>` : "";
+  const zz = pose === "sleep" ? `<text x="760" y="300" font-family="JetBrains Mono" font-weight="600" font-size="70" fill="${P.acc}" opacity=".7">z</text><text x="820" y="230" font-family="JetBrains Mono" font-weight="600" font-size="50" fill="${P.acc}" opacity=".45">z</text>` : "";
+  const bang = pose === "found" ? `<text x="790" y="300" font-family="Geist" font-weight="600" font-size="150" fill="${P.warn}" filter="url(#glow)">!</text>` : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <radialGradient id="bgg" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#121a2a"/><stop offset="1" stop-color="${P.bg}"/></radialGradient>
+    <radialGradient id="face" cx="38%" cy="35%" r="75%"><stop offset="0" stop-color="#f7f2e7"/><stop offset=".7" stop-color="${P.moon}"/><stop offset="1" stop-color="#b9b19f"/></radialGradient>
+    <linearGradient id="beam" x1="0" x2="1"><stop offset="0" stop-color="${P.acc}" stop-opacity="0"/><stop offset=".75" stop-color="${P.acc}" stop-opacity=".9"/><stop offset="1" stop-color="${P.acc}" stop-opacity="0"/></linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="halo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="40"/></filter>
+    <clipPath id="head"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
+    <clipPath id="back"><rect x="0" y="0" width="1024" height="${cy+5}"/></clipPath>
+    <clipPath id="front"><rect x="0" y="${cy+5}" width="1024" height="1024"/></clipPath>
+  </defs>
+  ${bg}
+  <circle cx="${cx}" cy="${cy}" r="${r+30}" fill="${P.moon}" opacity="${.05 + .12*k}" filter="url(#halo)"/>
+  ${ring("back")}
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#face)"/>
+  <g clip-path="url(#head)" opacity=".5">
+    <circle cx="370" cy="380" r="38" fill="#c9c1ae"/><circle cx="330" cy="660" r="26" fill="#c9c1ae"/><circle cx="430" cy="790" r="44" fill="#cfc7b5"/>
+    <circle cx="620" cy="790" r="22" fill="#c9c1ae"/><circle cx="700" cy="360" r="30" fill="#c9c1ae"/><circle cx="270" cy="520" r="18" fill="#c9c1ae"/>
+  </g>
+  <path d="${shadow}" fill="${P.shade}" opacity=".92" clip-path="url(#head)" filter="url(#soft)"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${P.moon}" stroke-opacity=".35" stroke-width="6"/>
+  <rect x="300" y="455" width="420" height="160" rx="80" fill="${P.panel}" stroke="${P.line}" stroke-width="8"/>
+  <rect x="322" y="472" width="150" height="22" rx="11" fill="#ffffff" opacity=".06"/>
+  ${eyes(pose)}
+  ${mouth(pose)}
+  ${ring("front")}
+  <circle cx="${satX}" cy="${satY}" r="26" fill="${sat}" ${pose === "sleep" ? "" : 'filter="url(#glow)"'}/>
+  ${zz}${bang}
+</svg>`;
+}
+window.render = (pose, bg) => { document.getElementById("stage").innerHTML = svg(pose, {bg}); return svg(pose, {bg}); };
+</script></body></html>

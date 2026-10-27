@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+html,body{margin:0;background:#07090e}
+#b{width:1500px;height:500px;position:relative;overflow:hidden;background:radial-gradient(120% 140% at 82% 50%, #131c2e 0%, #07090e 55%);color:#e6eaf2;font-family:Geist,sans-serif}
+canvas{position:absolute;inset:0}
+.txt{position:absolute;left:400px;top:100px;width:600px}
+.k{font:500 17px "JetBrains Mono";color:#5d687d;letter-spacing:.02em}
+.k b{color:#a3b6ff;font-weight:500}
+h1{margin:14px 0 0;font:700 112px/.9 Geist;letter-spacing:-.02em}
+h1 span{color:#5d687d}
+.tag{margin-top:20px;font:500 30px Geist;letter-spacing:-.02em;color:#97a1b5}
+.tag b{color:#e6eaf2;font-weight:500}
+.meta{margin-top:26px;display:flex;gap:14px;font:500 15px "JetBrains Mono";color:#97a1b5}
+.meta span{border:1.5px solid #273144;border-radius:999px;padding:7px 13px}
+.meta b{color:#e6eaf2;font-weight:600}
+#luno{position:absolute;right:24px;top:10px;width:480px;height:480px}
+#luno svg{width:100%;height:100%}
+</style></head><body>
+<div id="b">
+  <canvas id="c" width="3000" height="1000" style="width:1500px;height:500px"></canvas>
+  <div class="txt">
+    <div class="k"><b>//</b> your privacy assistant</div>
+    <h1>NEW<span>MOON</span></h1>
+    <div class="tag">Your number, <b>off the lists.</b></div>
+    <div class="meta"><span>powered by <b>Grok</b></span><span><b>73</b> sites</span><span>rechecks every <b>new moon</b></span></div>
+  </div>
+  <div id="luno"></div>
+</div>
+<script>
+window.ready = (async () => {
+  const svg = await (await fetch("../assets/mascot/newmoon-scan.svg")).text();
+  document.getElementById("luno").innerHTML = svg;
+  await document.fonts.ready;
+  const cv = document.getElementById("c"), x = cv.getContext("2d"), TAU = Math.PI*2;
+  x.scale(2, 2);
+  // stars
+  let s = 11; const r = () => (s = (s*16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 140; i++){ const px = r()*1500, py = r()*500, a = .08 + r()*.35, sz = r() < .9 ? 1 : 1.8; x.fillStyle = `rgba(230,234,242,${a})`; x.beginPath(); x.arc(px, py, sz, 0, TAU); x.fill(); }
+  // orbit rings behind the character, centred on it
+  const C = [1500 - 24 - 240, 250];
+  x.lineWidth = 1.5;
+  [[300, .10, []], [390, .08, [4, 10]], [480, .06, [2, 12]]].forEach(([R, a, d]) => { x.strokeStyle = `rgba(163,182,255,${a})`; x.setLineDash(d); x.beginPath(); x.arc(C[0], C[1], R, 0, TAU); x.stroke(); });
+  x.setLineDash([]);
+  // Grok's beam
+  const ang = Math.PI*0.8;
+  const g = x.createConicGradient(ang - 1.0, C[0], C[1]); g.addColorStop(0, "rgba(163,182,255,0)"); g.addColorStop(1/TAU, "rgba(163,182,255,.13)"); g.addColorStop(1/TAU + .001, "rgba(163,182,255,0)");
+  x.fillStyle = g; x.beginPath(); x.arc(C[0], C[1], 500, 0, TAU); x.arc(C[0], C[1], 250, 0, TAU, true); x.fill("evenodd");
+  x.strokeStyle = "rgba(163,182,255,.45)"; x.lineWidth = 2; x.beginPath(); x.moveTo(C[0] + Math.cos(ang)*250, C[1] + Math.sin(ang)*250); x.lineTo(C[0] + Math.cos(ang)*500, C[1] + Math.sin(ang)*500); x.stroke();
+  // satellites: lit ones still up, dark ones cleared
+  const sats = [[300, 2.5, "lit"], [300, 3.5, "done"], [300, 4.3, "lit"], [390, 2.9, "warn"], [390, 3.3, "done"], [390, 3.9, "done"], [390, 4.6, "lit"], [480, 2.75, "done"], [480, 3.15, "lit"], [480, 3.6, "done"], [300, 1.9, "done"], [390, 2.2, "lit"], [480, 4.15, "done"]];
+  for (const [R, a, st] of sats){
+    const px = C[0] + Math.cos(a)*R, py = C[1] + Math.sin(a)*R; if (py < -10 || py > 510 || (px < 1010 && py > 70 && py < 400)) continue;
+    const col = st === "lit" ? "#efe9dc" : st === "warn" ? "#e9b45b" : "#07090e";
+    if (st !== "done"){ x.shadowColor = col; x.shadowBlur = 14; }
+    x.fillStyle = col; x.beginPath(); x.arc(px, py, st === "done" ? 4.5 : 5, 0, TAU); x.fill(); x.shadowBlur = 0;
+    if (st === "done"){ x.strokeStyle = "#3a4660"; x.lineWidth = 1.5; x.stroke(); }
+  }
+  // the satellite the beam is on, with its name
+  const bx = C[0] + Math.cos(ang)*390, by = C[1] + Math.sin(ang)*390;
+  x.shadowColor = "#efe9dc"; x.shadowBlur = 18; x.fillStyle = "#efe9dc"; x.beginPath(); x.arc(bx, by, 6.5, 0, TAU); x.fill(); x.shadowBlur = 0;
+  x.strokeStyle = "rgba(163,182,255,.6)"; x.lineWidth = 1.5; x.beginPath(); x.arc(bx, by, 14, 0, TAU); x.stroke();
+  return true;
+})();
+</script></body></html>

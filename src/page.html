@@ -1,0 +1,1559 @@
+<title>Newmoon</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Six Grok Bots take your phone number and home address off 45 people-search sites, confirm every opt-out and check again every new moon. Free.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: night terminal. Asymmetric hero (type left, the moon right), then full-width instrument panels.
+   One bold thing: the moon, which is the user's own plan and goes dark as listings come down. Everything else is quiet. */
+:root{
+  color-scheme: dark;
+  --bg:#07090e;        /* sky */
+  --panel:#0b1018;     /* terminal glass */
+  --raise:#111827;
+  --line:#1b2331;
+  --line-2:#273144;
+  --text:#e6eaf2;
+  --mute:#97a1b5;
+  --dim:#5d687d;
+  --moon:#efe9dc;      /* moonlight, the only warm colour */
+  --accent:#a3b6ff;    /* cold periwinkle from the original post */
+  --ok:#62d3a2;
+  --warn:#e9b45b;
+  --bad:#ef8a8a;
+  --f-display:"Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --gutter:max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r:max(16px, env(safe-area-inset-right, 0px));
+  --wrap:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+a{color:inherit}
+::selection{background:var(--accent);color:var(--bg)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter-r)}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12.5px;color:var(--dim);letter-spacing:.02em;display:flex;align-items:center;gap:12px}
+.eyebrow::after{content:"";flex:1;border-top:1px dashed var(--line-2);min-width:24px}
+.eyebrow b{color:var(--accent);font-weight:500}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.025em}
+h2{font-size:clamp(30px,4.2vw,48px);line-height:1.04;font-weight:600}
+h3{font-size:20px;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+.lede{color:var(--mute);font-size:17px;max-width:60ch}
+section{padding-block:clamp(52px,6.5vw,88px)}
+.sec-head{display:grid;gap:18px;margin-bottom:clamp(28px,4vw,48px)}
+.sec-head .row{display:flex;flex-wrap:wrap;gap:20px 48px;align-items:end;justify-content:space-between}
+.sec-head .row > *{min-width:0}
+
+/* buttons */
+.btn{font:500 14px/1 var(--f-mono);display:inline-flex;align-items:center;gap:10px;padding:13px 16px;border-radius:8px;border:1px solid var(--line-2);background:transparent;color:var(--text);cursor:pointer;text-decoration:none;transition:border-color .15s, background .15s, transform .15s}
+.btn:hover{border-color:var(--mute)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--moon);color:var(--bg);border-color:var(--moon)}
+.btn.primary:hover{background:#fff}
+.btn.primary .sig{color:#4f63b8}
+.btn.small{padding:8px 11px;font-size:12.5px;border-radius:6px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn .sig{color:var(--accent)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:color-mix(in srgb, var(--bg) 86%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:60px}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;font:600 19px/1 var(--f-display);letter-spacing:-.03em}
+.mark svg{flex:none}
+.pw{font:500 11px/1 var(--f-mono);color:var(--mute);border:1px solid var(--line-2);border-radius:999px;padding:6px 9px;letter-spacing:.02em;white-space:nowrap}
+.pw b{color:var(--text);font-weight:600}
+.nav{display:flex;gap:22px;margin-left:auto}
+.nav a{font:500 12.5px/1 var(--f-mono);color:var(--mute);text-decoration:none}
+.nav a:hover{color:var(--text)}
+@media (max-width:860px){.nav{display:none}.top .btn{margin-left:auto}}
+@media (max-width:420px){.top .btn{display:none}.pw{margin-left:auto}}
+
+/* hero */
+.hero{padding-block:clamp(40px,7vw,96px) clamp(48px,7vw,88px)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(32px,5vw,72px);align-items:center}
+.hero h1{font-size:clamp(46px,6.4vw,92px);line-height:.92;font-weight:600;letter-spacing:-.045em;margin-top:22px}
+.hero h1 .dim{color:var(--dim)}
+.hero .lede{margin-top:26px;font-size:clamp(17px,1.5vw,19px);color:var(--mute)}
+.hero .lede strong{color:var(--text);font-weight:500}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.start{margin-top:30px;border:1px solid var(--line-2);border-radius:14px;background:var(--panel);overflow:hidden}
+.start-head{display:flex;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);font:12px/1.3 var(--f-mono);color:var(--dim)}
+.start-head b{color:var(--accent);font-weight:500}
+.start-grid{display:grid;grid-template-columns:1fr 1fr 1fr 104px;gap:10px;padding:16px 16px 4px}
+.start-acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px 16px}
+.start-acts .note{flex:1;min-width:200px}
+@media (max-width:620px){.start-grid{grid-template-columns:1fr 1fr}.start-head span:last-child{display:none}}
+.hello{color:var(--accent)}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:36px;padding-top:22px;border-top:1px solid var(--line);font:500 13px/1.3 var(--f-mono);color:var(--mute)}
+.facts b{display:block;font:600 28px/1 var(--f-display);color:var(--text);letter-spacing:-.03em;margin-bottom:6px}
+.facts s{color:var(--dim)}
+.sky{position:relative;display:grid;justify-items:center;gap:22px}
+.orb{position:relative;width:min(100%,540px);aspect-ratio:1;max-width:100%}
+.orb canvas{width:100%;height:100%;display:block;cursor:crosshair;touch-action:manipulation}
+.orb-tip{position:absolute;z-index:3;transform:translate(-50%, calc(-100% - 16px));background:var(--panel);border:1px solid var(--line-2);border-radius:9px;padding:10px 12px;font:12px/1.5 var(--f-mono);color:var(--mute);min-width:190px;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);white-space:nowrap}
+.orb-tip b{display:block;font:500 15px/1.3 var(--f-body);color:var(--text);margin-bottom:2px}
+.orb-tip .s{letter-spacing:.08em;text-transform:uppercase;font-size:10.5px}
+.orb-tip a{display:inline-block;margin-top:8px;color:var(--text);text-decoration:none;border:1px solid var(--line-2);border-radius:6px;padding:6px 9px}
+.orb-tip a:hover{border-color:var(--mute)}
+.orb-line{width:min(100%,400px);font:12.5px/1.4 var(--f-mono);color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:1.4em}
+.orb-line b{color:var(--accent);font-weight:500}
+.orb-line i{font-style:normal;color:var(--text)}
+.ephem{width:min(100%,400px);font:12.5px/1 var(--f-mono);color:var(--mute);display:grid;gap:0;border-top:1px solid var(--line)}
+.ephem div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ephem dt{color:var(--dim);letter-spacing:.08em;text-transform:uppercase;font-size:11px}
+.ephem dd{margin:0;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+.ephem .tag{color:var(--warn)}
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:1fr}
+  .sky{order:-1;gap:14px}
+  .orb{width:min(100%,380px)}
+}
+
+/* two ways */
+.ways{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;background:var(--panel)}
+.way{padding:clamp(22px,3vw,34px);display:grid;gap:14px;align-content:start}
+.way + .way{border-left:1px solid var(--line-2)}
+.way .k{font:12px/1 var(--f-mono);color:var(--dim);display:flex;gap:10px;align-items:center}
+.way .k b{color:var(--text);font-weight:500;border:1px solid var(--line-2);border-radius:999px;padding:5px 9px}
+.way h3{font-size:clamp(24px,2.6vw,32px);letter-spacing:-.03em}
+.way p{color:var(--mute);max-width:52ch}
+.way ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font:13px/1.5 var(--f-mono);color:var(--mute)}
+.way li::before{content:"→ ";color:var(--accent)}
+.way .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+@media (max-width:860px){.ways{grid-template-columns:1fr}.way + .way{border-left:0;border-top:1px solid var(--line-2)}}
+
+/* terminal replay */
+.term{border:1px solid var(--line-2);border-radius:14px;background:var(--panel);overflow:hidden;box-shadow:0 40px 120px -60px rgba(120,140,220,.25)}
+.term-bar{display:flex;align-items:stretch;border-bottom:1px solid var(--line);font:12.5px/1 var(--f-mono);color:var(--dim);overflow-x:auto}
+.term-bar span{padding:13px 16px;border-right:1px solid var(--line);white-space:nowrap}
+.term-bar .on{color:var(--text);box-shadow:inset 0 2px 0 var(--accent)}
+.term-bar .on::before{content:"● ";color:var(--ok)}
+.term-bar .right{margin-left:auto;border-right:0;border-left:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.term-bar .right i{font-style:normal;color:var(--ok)}
+.term-body{padding:clamp(16px,2.4vw,28px);display:grid;gap:18px}
+.cmd{font:13.5px/1.5 var(--f-mono);color:var(--mute);overflow-wrap:anywhere}
+.cmd b{color:var(--accent);font-weight:500}
+.cmd em{font-style:normal;color:var(--text)}
+.caret{display:inline-block;width:.55em;height:1.1em;background:var(--accent);vertical-align:-3px;margin-left:4px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.tstats{display:flex;flex-wrap:wrap;gap:16px 40px;align-items:flex-end}
+.tstat{display:flex;align-items:flex-end;gap:10px}
+.tstat b{font:600 clamp(40px,5vw,60px)/.85 var(--f-display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.tstat span{font:10.5px/1.35 var(--f-mono);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.tlabel{font:12px/1 var(--f-mono);color:var(--dim);display:flex;gap:12px;align-items:center}
+.tlabel::after{content:"";flex:1;border-top:1px dashed var(--line-2)}
+.tlabel .live{order:2;color:var(--text);letter-spacing:.1em}
+.tlabel .live::before{content:"● ";color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--raise);display:grid;grid-template-columns:1fr auto;gap:6px 12px;transition:border-color .3s, background .3s}
+.tile.on{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 7%, var(--raise))}
+.tile .nm{font:500 14px/1 var(--f-mono)}
+.tile .nm small{color:var(--dim);font-size:11px;margin-right:6px}
+.tile .bar{justify-self:end;display:flex;gap:2px;align-self:center}
+.tile .bar i{width:3px;height:9px;background:var(--line-2);border-radius:1px}
+.tile .bar i.f{background:var(--accent)}
+.tile p{font:11.5px/1.45 var(--f-mono);color:var(--mute)}
+.tile p b{color:var(--text);font-weight:400}
+.tile .n{font:600 30px/1 var(--f-display);align-self:end;font-variant-numeric:tabular-nums}
+.feed{list-style:none;margin:0;padding:0;display:grid}
+.feed li{display:grid;grid-template-columns:64px 36px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);animation:drop .45s ease-out}
+.feed li:first-child{background:linear-gradient(90deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 70%)}
+@keyframes drop{from{transform:translateY(-6px);opacity:.25}to{transform:none;opacity:1}}
+.feed time{font:11.5px/1 var(--f-mono);color:var(--dim);font-variant-numeric:tabular-nums}
+.feed .ab{width:34px;height:34px;border-radius:7px;border:1px solid var(--line-2);display:grid;place-items:center;font:600 9.5px/1 var(--f-mono);color:var(--mute);letter-spacing:.04em}
+.feed .tt{min-width:0}
+.feed .tt b{display:block;font:500 15px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed .tt span{font:11.5px/1.4 var(--f-mono);color:var(--dim)}
+.feed .by{font:11.5px/1 var(--f-mono);color:var(--dim);white-space:nowrap}
+.chip{font:500 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line-2);border-radius:5px;padding:7px 9px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;min-width:118px}
+.chip::before{content:"";width:7px;height:7px;border-radius:1.5px;background:currentColor}
+.chip.ok{color:var(--ok)}
+.chip.info{color:var(--accent)}
+.chip.warn{color:var(--warn)}
+.chip.dim{color:var(--dim)}
+.chip.lit{color:var(--moon)}
+.chip.run{color:var(--accent);border-style:dashed}
+.draft{border:1px solid var(--line-2);border-radius:10px;background:var(--bg);min-height:184px;display:grid;grid-template-rows:auto 1fr auto}
+.draft header{display:flex;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);font:12px/1.2 var(--f-mono);color:var(--dim)}
+.draft header b{color:var(--text);font-weight:500}
+.draft header .st{color:var(--dim)}
+.draft header .st.ok{color:var(--ok)}
+.draft .bd{padding:14px 16px;display:grid;align-content:start;gap:10px}
+.draft .to{font:12px/1 var(--f-mono);color:var(--dim)}
+.draft .say{font:500 clamp(18px,2vw,24px)/1.3 var(--f-body);letter-spacing:-.01em;min-height:1.3em}
+.draft .say.big{font:600 clamp(30px,4.4vw,52px)/1 var(--f-display);letter-spacing:-.04em}
+.draft .say .q{color:var(--dim)}
+.draft .sub{font:13px/1.4 var(--f-mono);color:var(--dim)}
+.draft footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;font:13px/1 var(--f-mono)}
+.draft footer .ap{white-space:nowrap}
+.draft footer .ap b{color:var(--accent)}
+.draft footer .ap .y{color:var(--ok)}
+.draft footer .ok-dots{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:11.5px}
+.draft footer .ok-dots i{width:14px;height:5px;border-radius:2px;background:var(--line-2);display:inline-block}
+.draft footer .ok-dots i.f{background:var(--ok)}
+.term-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;margin-top:16px;font:12.5px/1.5 var(--f-mono);color:var(--dim)}
+@media (max-width:760px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feed li{grid-template-columns:34px minmax(0,1fr) auto}
+  .feed time,.feed .by{display:none}
+  .tile{padding:12px}
+  .tile .bar{display:none}
+  .tile p{font-size:11px}
+  .draft footer .ok-dots span{display:none}
+  .ephem{font-size:11.5px}
+  .ephem dt{white-space:nowrap}
+  .chip{min-width:0}
+}
+
+/* crew */
+.crew{border-top:1px solid var(--line)}
+.crew-row{display:grid;grid-template-columns:72px minmax(0,1.05fr) minmax(0,1.3fr) minmax(0,1fr);gap:20px 32px;padding:26px 0;border-bottom:1px solid var(--line);align-items:start}
+.crew-row .no{font:500 13px/1.6 var(--f-mono);color:var(--dim)}
+.crew-row h3{display:flex;gap:10px;align-items:baseline}
+.crew-row h3 small{font:500 12px/1 var(--f-mono);color:var(--accent);letter-spacing:0}
+.crew-row .when{font:12px/1.5 var(--f-mono);color:var(--dim);margin-top:8px}
+.crew-row .job{color:var(--mute);font-size:15.5px}
+.never{font:13px/1.5 var(--f-mono);color:var(--mute);display:flex;gap:10px}
+.never::before{content:"never";flex:none;color:var(--bad);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;border:1px solid color-mix(in srgb, var(--bad) 40%, transparent);border-radius:4px;padding:3px 6px;height:max-content;margin-top:1px}
+.crew-head{display:grid;grid-template-columns:72px minmax(0,1.05fr) minmax(0,1.3fr) minmax(0,1fr);gap:32px;padding:0 0 12px;font:11px/1 var(--f-mono);color:var(--dim);letter-spacing:.12em;text-transform:uppercase}
+@media (max-width:860px){
+  .crew-head{display:none}
+  .crew-row{grid-template-columns:44px minmax(0,1fr)}
+  .crew-row .job,.crew-row .never{grid-column:2}
+}
+
+/* planner */
+.planner{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:clamp(24px,3.5vw,48px);align-items:start}
+.form{display:grid;gap:22px;position:sticky;top:84px}
+.fs{display:grid;gap:12px;border:0;margin:0;padding:0;min-width:0}
+.fs legend{font:11px/1 var(--f-mono);color:var(--dim);letter-spacing:.12em;text-transform:uppercase;padding:0;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:grid;gap:6px;min-width:0}
+.field label{font:12.5px/1.2 var(--f-mono);color:var(--mute)}
+.field label i{font-style:normal;color:var(--dim)}
+input[type=text],input[type=email],input[type=tel],input[type=search],select.in{width:100%;font:15px/1.2 var(--f-body);color:var(--text);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:11px 12px;min-width:0}
+input::placeholder{color:var(--dim)}
+input:focus,select.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent)}
+.depth{display:grid;gap:8px}
+.depth label{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--line-2);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color .15s, background .15s}
+.depth label:hover{border-color:var(--mute)}
+.depth input{position:absolute;opacity:0;pointer-events:none}
+.depth .r{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--dim);display:grid;place-items:center}
+.depth .t{font-weight:500;font-size:15px}
+.depth .t small{display:block;font:12px/1.4 var(--f-mono);color:var(--dim);font-weight:400;margin-top:2px}
+.depth .c{font:600 22px/1 var(--f-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.depth input:checked + label{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 6%, transparent)}
+.depth input:checked + label .r{border-color:var(--accent)}
+.depth input:checked + label .r::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.depth input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.note{font:12.5px/1.55 var(--f-mono);color:var(--dim)}
+.note b{color:var(--mute);font-weight:500}
+
+.board{border:1px solid var(--line-2);border-radius:14px;background:var(--panel);min-width:0}
+.who{font-size:15px;color:var(--mute);padding:12px 14px;border:1px dashed var(--line-2);border-radius:8px}
+.who b{color:var(--text);font-weight:500}
+.who a{color:var(--accent);font:12.5px var(--f-mono);text-decoration:none;margin-left:6px}
+.board-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 28px;padding:22px;border-bottom:1px solid var(--line);align-items:center}
+.board-head canvas{width:112px;height:112px;display:block}
+.bh-main{display:grid;gap:14px;min-width:0}
+.bh-stats{display:flex;flex-wrap:wrap;gap:8px 28px;font:11px/1.3 var(--f-mono);color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.bh-stats b{display:block;font:600 30px/1 var(--f-display);color:var(--text);letter-spacing:-.03em;text-transform:none;margin-bottom:4px;font-variant-numeric:tabular-nums}
+.bh-stats .w b{color:var(--warn)}
+.moons{display:flex;flex-wrap:wrap;gap:5px}
+.moons i{width:11px;height:11px;border-radius:50%;background:var(--moon);box-shadow:0 0 6px color-mix(in srgb, var(--moon) 30%, transparent);transition:background .3s, box-shadow .3s}
+.moons i[data-s=filed]{background:linear-gradient(90deg, var(--moon) 50%, var(--line-2) 50%);box-shadow:none}
+.moons i[data-s=confirmed]{background:linear-gradient(90deg, var(--moon) 25%, var(--line-2) 25%);box-shadow:none}
+.moons i[data-s=removed],.moons i[data-s=notlisted]{background:var(--bg);box-shadow:inset 0 0 0 1px var(--line-2)}
+.moons i[data-s=needsyou]{background:var(--warn);box-shadow:none}
+.moons i[data-s=skip]{background:transparent;box-shadow:inset 0 0 0 1px var(--line);opacity:.5}
+.example{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--warn) 7%, transparent);font:12.5px/1.5 var(--f-mono);color:var(--warn)}
+.grp{padding:14px 22px 6px;font:11px/1 var(--f-mono);color:var(--dim);letter-spacing:.12em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
+.plan{list-style:none;margin:0;padding:0}
+.plan li{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:8px 16px;align-items:center;padding:13px 22px;border-top:1px solid var(--line)}
+.plan li:hover{background:color-mix(in srgb, var(--raise) 60%, transparent)}
+.plan .ix{font:12px/1 var(--f-mono);color:var(--dim);font-variant-numeric:tabular-nums}
+.plan .nm{min-width:0}
+.plan .nm b{font-weight:500;font-size:15.5px}
+.plan .nm .cov{display:block;font:11.5px/1.4 var(--f-mono);color:var(--dim);margin-top:2px}
+.flags{display:inline-flex;flex-wrap:wrap;gap:5px;margin-left:8px;vertical-align:2px}
+.flag{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line-2);border-radius:4px;padding:3px 5px;white-space:nowrap}
+.flag.you{color:var(--warn);border-color:color-mix(in srgb, var(--warn) 40%, transparent)}
+.links{display:flex;gap:6px}
+.links a{font:500 12px/1 var(--f-mono);color:var(--mute);text-decoration:none;border:1px solid var(--line-2);border-radius:6px;padding:7px 9px;white-space:nowrap}
+.links a:hover{color:var(--text);border-color:var(--mute)}
+.links a.out{color:var(--text)}
+select.status{appearance:none;-webkit-appearance:none;font:500 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;background:var(--bg);color:var(--dim);border:1px solid var(--line-2);border-radius:5px;padding:8px 26px 8px 10px;cursor:pointer;min-width:126px;
+  background-image:linear-gradient(45deg, transparent 50%, currentColor 50%),linear-gradient(135deg, currentColor 50%, transparent 50%);background-position:calc(100% - 13px) 50%, calc(100% - 9px) 50%;background-size:4px 4px;background-repeat:no-repeat}
+select.status option{color:var(--text);background:var(--panel)}
+select.status[data-s=listed]{color:var(--moon)}
+select.status[data-s=filed],select.status[data-s=confirmed]{color:var(--accent)}
+select.status[data-s=removed],select.status[data-s=notlisted]{color:var(--ok)}
+select.status[data-s=needsyou]{color:var(--warn)}
+select.status[data-s=skip]{color:var(--dim);text-decoration:line-through}
+.board-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:16px 22px;border-top:1px solid var(--line)}
+.board-foot .sp{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,20px);opacity:0;background:var(--moon);color:var(--bg);font:500 13px/1 var(--f-mono);padding:12px 16px;border-radius:8px;transition:.2s;pointer-events:none;z-index:40;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:960px){
+  .planner{grid-template-columns:1fr}
+  .form{position:static}
+}
+@media (max-width:620px){
+  .board-head{grid-template-columns:1fr}
+  .board-head canvas{display:none}
+  .plan li{grid-template-columns:24px minmax(0,1fr) auto;padding:14px 16px;align-items:start}
+  .plan .nm{grid-column:2 / 4}
+  .plan .links{grid-column:2;grid-row:2}
+  .plan select.status{grid-column:3;grid-row:2;min-width:112px}
+  .grp,.example,.board-foot{padding-left:16px;padding-right:16px}
+  .flags{display:flex;margin:6px 0 0}
+}
+
+/* kit */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--line);margin-bottom:32px}
+.steps li{list-style:none;padding:18px 20px 18px 0;display:grid;gap:8px;align-content:start}
+.steps li + li{padding-left:20px;border-left:1px solid var(--line)}
+.steps .k{font:12px/1 var(--f-mono);color:var(--accent)}
+.steps p{font-size:15px;color:var(--mute)}
+.steps p b{color:var(--text);font-weight:500}
+.steps code{font:13px var(--f-mono);color:var(--text);background:var(--raise);padding:1px 5px;border-radius:4px}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr}.steps li:nth-child(3){padding-left:0;border-left:0}.steps li:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}.steps li + li{padding-left:0;border-left:0;border-top:1px solid var(--line)}}
+.kit{border:1px solid var(--line-2);border-radius:14px;background:var(--panel);overflow:hidden;min-width:0}
+.tabs{display:flex;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.tabs button{font:500 12.5px/1 var(--f-mono);color:var(--dim);background:none;border:0;border-right:1px solid var(--line);padding:14px 16px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--text)}
+.tabs button[aria-selected=true]{color:var(--text);box-shadow:inset 0 2px 0 var(--accent);background:var(--raise)}
+.kit-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font:12.5px/1.5 var(--f-mono);color:var(--dim)}
+.kit-bar .acts{display:flex;gap:8px;flex-wrap:wrap}
+.kit pre{margin:0;padding:20px 22px;max-height:520px;overflow:auto;font:13px/1.65 var(--f-mono);color:var(--mute);white-space:pre-wrap;overflow-wrap:anywhere}
+.kit pre .h{color:var(--text)}
+.kit pre .v{color:var(--accent)}
+
+/* directory */
+.dir-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.dir-tools input{max-width:320px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{font:500 12px/1 var(--f-mono);color:var(--mute);background:none;border:1px solid var(--line-2);border-radius:999px;padding:9px 12px;cursor:pointer}
+.filters button[aria-pressed=true]{color:var(--bg);background:var(--moon);border-color:var(--moon)}
+.dir-count{margin-left:auto;font:12.5px/1 var(--f-mono);color:var(--dim)}
+.dir{border-top:1px solid var(--line)}
+.dir-row{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(0,1.4fr) 168px;gap:10px 28px;padding:18px 0;border-bottom:1px solid var(--line);align-items:start}
+.tier{font:500 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.tier.t1{color:var(--moon)}
+.tier.t2{color:var(--accent)}
+.tier.t4{color:var(--ok)}
+.src{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.src.nm{color:var(--ok)}
+.dir-row .nm .src{display:inline-block;margin-top:6px}
+.dir-row .nm b{font-weight:500;font-size:16px}
+.dir-row .nm .cov{display:block;font:11.5px/1.45 var(--f-mono);color:var(--dim);margin-top:4px}
+.dir-row .nt{font-size:14.5px;color:var(--mute)}
+.dir-row .nt .flags{display:flex;margin:8px 0 0}
+.dir-row .links{justify-content:flex-end}
+.dir-empty{padding:28px 0;color:var(--dim);font:13px var(--f-mono)}
+@media (max-width:860px){
+  .dir-row{grid-template-columns:64px minmax(0,1fr)}
+  .dir-row .nt,.dir-row .links{grid-column:2}
+  .dir-row .links{justify-content:flex-start}
+  .dir-count{margin-left:0;width:100%}
+}
+
+/* limits + faq */
+.limits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}
+.limit{padding:24px 28px 26px 0;display:grid;gap:10px;align-content:start;border-bottom:1px solid var(--line)}
+.limit:not(:nth-child(3n+1)){padding-left:28px;border-left:1px solid var(--line)}
+.limit h3{font-size:18px}
+.limit p{color:var(--mute);font-size:15px}
+.limit .sites{font:12px/1.5 var(--f-mono);color:var(--warn)}
+@media (max-width:860px){.limits{grid-template-columns:1fr}.limit:not(:nth-child(3n+1)){padding-left:0;border-left:0}}
+.faq{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(24px,5vw,72px)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq details:first-child{border-top:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:20px 36px 20px 0;font:500 17px/1.35 var(--f-body);position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:18px;font:400 22px/1 var(--f-mono);color:var(--dim)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding:0 0 22px;color:var(--mute);max-width:62ch}
+@media (max-width:860px){.faq{grid-template-columns:1fr}}
+
+/* close + footer */
+.close{border-top:1px solid var(--line);text-align:left}
+.close .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end}
+.close h2{font-size:clamp(40px,7vw,92px);letter-spacing:-.045em;line-height:.95}
+.close h2 span{color:var(--dim)}
+@media (max-width:760px){.close .wrap{grid-template-columns:1fr}}
+footer.site{border-top:1px solid var(--line);padding-block:36px 48px;font:12.5px/1.7 var(--f-mono);color:var(--dim)}
+footer.site .wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px 48px}
+footer.site a{color:var(--mute)}
+footer.site p + p{margin-top:10px}
+@media (max-width:760px){footer.site .wrap{grid-template-columns:1fr}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+<!-- /head -->
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top" aria-label="Newmoon, back to top">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9.25" fill="#07090e" stroke="#efe9dc" stroke-width="1.5"/><path d="M11 1.75a9.25 9.25 0 0 0 0 18.5a6 9.25 0 0 1 0-18.5z" fill="#efe9dc" opacity=".18"/></svg>
+      newmoon
+    </a>
+    <span class="pw">powered by <b>Grok</b></span>
+    <nav class="nav" aria-label="Sections">
+      <a href="#run">The run</a>
+      <a href="#crew">Crew</a>
+      <a href="#plan">Planner</a>
+      <a href="#kit">Prompts</a>
+      <a href="#sites">Sites</a>
+      <a href="#faq">FAQ</a>
+      <a href="docs.html" style="color:var(--text)">Docs</a>
+    </nav>
+    <a class="btn small primary" href="#plan"><span class="sig">$</span> build my plan</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow"><span id="hero-eye"><b>//</b> your privacy assistant, powered by Grok</span></div>
+        <h1>Your number,<br><span class="dim">off the</span> lists.</h1>
+        <p class="lede">Type your name. Newmoon builds your removal plan for <strong id="h-sites">73 sites</strong> and hands it to Grok, which finds your listings, files the opt-outs and checks again every new moon. <strong>Nothing gets sent without your yes.</strong></p>
+        <form class="start" id="start" autocomplete="off">
+          <div class="start-head"><span><b>//</b> start with your name</span><span>stays in your browser</span></div>
+          <div class="start-grid">
+            <div class="field"><label for="f-first">First name</label><input type="text" id="f-first" placeholder="Jordan"></div>
+            <div class="field"><label for="f-last">Last name</label><input type="text" id="f-last" placeholder="Avery"></div>
+            <div class="field"><label for="f-city">City</label><input type="text" id="f-city" placeholder="Austin"></div>
+            <div class="field"><label for="f-state">State</label><select class="in" id="f-state"></select></div>
+          </div>
+          <div class="start-acts">
+            <a class="btn primary" id="scan" href="https://grok.com/" target="_blank" rel="noopener noreferrer"><span class="sig">▸</span> find me with Grok</a>
+            <a class="btn" href="#plan">full removal plan ↓</a>
+          </div>
+        </form>
+        <div class="facts">
+          <div><b id="f-sites">73</b>sites with opt-out links</div>
+          <div><b>6</b>bots, one job each</div>
+          <div><b>$0</b><s>DeleteMe: $129/yr</s></div>
+        </div>
+      </div>
+      <div class="sky">
+        <div class="orb" id="orb">
+          <canvas id="moon" width="1040" height="1040" role="img" aria-label="Your plan as an orbit: the moon in the middle, every site as a satellite. Sites go dark as listings come down."></canvas>
+          <div class="orb-tip" id="orb-tip" hidden></div>
+        </div>
+        <div class="orb-line" id="orb-line" aria-live="off"></div>
+        <dl class="ephem" id="ephem">
+          <div><dt>Illumination</dt><dd id="e-lit">—</dd></div>
+          <div><dt>Still to do</dt><dd id="e-left">—</dd></div>
+          <div><dt>Recheck</dt><dd id="e-next">—</dd></div>
+          <div><dt>Plan</dt><dd id="e-plan">—</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="ways" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> two ways to run it</span></div>
+        <div class="row">
+          <h2>Scan in a minute.<br>Clear it for good.</h2>
+          <p class="lede">Start with a quick scan in Grok to see where you show up. When you want it gone, give the full plan to Grok Bot and let the crew work through it.</p>
+        </div>
+      </div>
+      <div class="ways">
+        <div class="way">
+          <span class="k"><b>Grok</b> quick scan · 1 minute</span>
+          <h3>See where you're listed</h3>
+          <p>Opens Grok with your name and city filled in. Grok searches the big people-search sites and lists where you show up, with the opt-out link for each.</p>
+          <ul><li>works with any Grok account</li><li>a starting point, not a full audit</li><li>search only for yourself</li></ul>
+          <div class="acts"><a class="btn primary" id="scan-2" href="https://grok.com/" target="_blank" rel="noopener noreferrer"><span class="sig">▸</span> find me with Grok</a></div>
+        </div>
+        <div class="way">
+          <span class="k"><b>Grok Bot</b> full removal · runs monthly</span>
+          <h3>Take it all down</h3>
+          <p>Six bots file every opt-out, click the confirmation emails, put your number on Do Not Call and re-check on every new moon. You approve each step.</p>
+          <ul><li id="w-count">73 sites + registries, in priority order</li><li>one sheet back, every line with proof</li><li>no ID, no card, ever</li></ul>
+          <div class="acts"><a class="btn primary" id="bot-add" href="#" target="_blank" rel="noopener noreferrer" hidden><span class="sig">+</span> add Newmoon to my Grok Bot</a><button class="btn" type="button" id="hero-copy"><span class="sig">⧉</span> copy Grok Bot prompt</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="run" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> one run, start to finish</span></div>
+        <div class="row">
+          <h2>What a run looks like</h2>
+          <p class="lede">A replay with an example person. Your own run happens inside your Grok Bot, on your data, and stops for your yes before anything is sent.</p>
+        </div>
+      </div>
+      <div class="term" id="term" aria-label="Replay of an example Newmoon run">
+        <div class="term-bar"><span class="on">newmoon — run</span><span>routines.yml</span><span>ledger.csv</span><span class="right"><i>●</i> connected · @you</span></div>
+        <div class="term-body">
+          <div class="cmd">~/lunar <b>❯</b> <em>grokbot skill run newmoon --plan priority --recheck new-moon</em><span class="caret"></span></div>
+          <div class="tstats">
+            <div class="tstat"><b id="t-found">0</b><span>listings<br>found</span></div>
+            <div class="tstat"><b id="t-filed">0</b><span>opt-outs<br>filed</span></div>
+            <div class="tstat"><b>$0</b><span>you pay<br>deleteme: $129/yr</span></div>
+          </div>
+          <div class="tlabel"><span>// what it does while you sleep</span></div>
+          <div class="tiles" id="t-tiles"></div>
+          <div class="tlabel"><span>// your listings, site by site</span><span class="live">LIVE</span></div>
+          <ol class="feed" id="t-feed"></ol>
+          <div class="draft" id="t-draft">
+            <header><span><b id="d-file">draft_1.md</b> <span id="d-meta">— filer / spokeo</span></span><span class="st" id="d-st">unsent</span></header>
+            <div class="bd"><div class="to" id="d-to">to: Spokeo / opt-out form</div><div class="say" id="d-say"></div><div class="sub" id="d-sub" hidden></div></div>
+            <footer><span class="ap" id="d-ap"><b>❯</b> approve? [y/N]</span><span class="ok-dots" id="d-dots"></span></footer>
+          </div>
+        </div>
+      </div>
+      <div class="term-foot"><span>Example data. Phone digits are masked the same way your bots will mask them in drafts.</span><button class="btn small" type="button" id="t-toggle" aria-pressed="false">❚❚ pause</button></div>
+    </div>
+  </section>
+
+  <section id="crew">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> the crew</span></div>
+        <div class="row">
+          <h2>Six bots, one job each</h2>
+          <p class="lede">Each bot has a single job and one hard rule it can't break. They hand work to each other in order, and Ledger keeps the receipts.</p>
+        </div>
+      </div>
+      <div class="crew-head" aria-hidden="true"><span>Order</span><span>Bot</span><span>Job</span><span>Hard rule</span></div>
+      <div class="crew" id="crew-list"></div>
+    </div>
+  </section>
+
+  <section id="plan">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> planner</span></div>
+        <div class="row">
+          <h2>Build your plan</h2>
+          <p class="lede">Pick how deep to go and get the sites in the order that matters, each with its search page and opt-out page. Mark progress as your bots report back. Everything stays in this browser.</p>
+        </div>
+      </div>
+      <div class="planner">
+        <form class="form" id="form" autocomplete="off">
+          <fieldset class="fs">
+            <legend>1 · Details for your bots</legend>
+            <p class="who" id="who"></p>
+            <div class="field"><label for="f-aka">Other names <i>· maiden name, nickname</i></label><input type="text" id="f-aka" placeholder="optional"></div>
+            <div class="field"><label for="f-phone">Phone to remove <i>· optional</i></label><input type="tel" id="f-phone" placeholder="leave blank and your bot will ask"></div>
+            <div class="field"><label for="f-email">Email for opt-outs <i>· a spare inbox works best</i></label><input type="email" id="f-email" placeholder="leave blank and your bot will ask"></div>
+            <p class="note">These go into the prompt you copy. Newmoon has no server, so <b>nothing here reaches us</b>. It goes only to Grok, when you send it.</p>
+          </fieldset>
+          <fieldset class="fs">
+            <legend>2 · How deep</legend>
+            <div class="depth" id="depth"></div>
+          </fieldset>
+        </form>
+
+        <div class="board" id="board">
+          <div class="board-head">
+            <canvas id="moon-sm" width="224" height="224" aria-hidden="true"></canvas>
+            <div class="bh-main">
+              <div class="bh-stats">
+                <div><b id="b-left">0</b>still up</div>
+                <div><b id="b-filed">0</b>filed</div>
+                <div><b id="b-clear">0</b>cleared</div>
+                <div class="w"><b id="b-you">0</b>need you</div>
+              </div>
+              <div class="moons" id="b-moons" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="example" id="example" hidden><span>Example progress. It clears when you mark your first site.</span><button class="btn small" type="button" id="ex-clear">clear example</button></div>
+          <div id="plan-list"></div>
+          <div class="board-foot">
+            <button class="btn small" type="button" id="x-csv">⇣ ledger .csv</button>
+            <button class="btn small" type="button" id="x-ics">⇣ recheck dates .ics</button>
+            <button class="btn small" type="button" id="x-json">⇣ backup .json</button>
+            <label class="btn small" for="x-import">⇡ restore</label><input class="sr" type="file" id="x-import" accept="application/json,.json">
+            <span class="sp"></span>
+            <a class="btn small" id="x-share" href="https://x.com/intent/post" target="_blank" rel="noopener noreferrer">post my moon on X</a>
+            <button class="btn small" type="button" id="x-reset">reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="kit">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> the kit</span></div>
+        <div class="row">
+          <h2>Paste it into your Grok Bot</h2>
+          <p class="lede">The main prompt already has your plan inside. Use it alone, or split the crew into six bots with the prompts below. Setup, commands and troubleshooting are in the <a href="docs.html" style="color:var(--accent)">docs</a>.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><span class="k">step 1</span><p>Open your Grok Bot and create a skill named <code>newmoon</code>. Or add the shared Newmoon bot in one click if it's available.</p></li>
+        <li><span class="k">step 2</span><p>Paste the <b>main prompt</b>. Your name, city and plan are already in it.</p></li>
+        <li><span class="k">step 3</span><p>Add <b>routines.yml</b> so Watch runs again on every new moon.</p></li>
+        <li><span class="k">step 4</span><p>Say <code>start</code>. Scout reports first, and nothing is filed until you approve it.</p></li>
+      </ol>
+      <div class="kit">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="kit-bar"><span id="kit-desc"></span><span class="acts"><button class="btn small" type="button" id="k-copy">⧉ copy</button><button class="btn small" type="button" id="k-all">⇣ whole kit .md</button></span></div>
+        <pre id="k-pre" tabindex="0"></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="sites">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> directory</span></div>
+        <div class="row">
+          <h2>Every site, with the direct link</h2>
+          <p class="lede">45 sites from the BADBOOL list (updated September 27, 2026), plus caller-ID apps and other sites Newmoon added. Each row has the page to search yourself and the page to opt out.</p>
+        </div>
+      </div>
+      <div class="dir-tools">
+        <label class="sr" for="d-q">Search sites</label>
+        <input type="search" id="d-q" placeholder="Search sites, e.g. Spokeo">
+        <div class="filters" id="d-filters"></div>
+        <span class="dir-count" id="d-count"></span>
+      </div>
+      <div class="dir" id="dir"></div>
+    </div>
+  </section>
+
+  <section id="limits">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow"><span><b>//</b> limits</span></div>
+        <div class="row">
+          <h2>What stays on you</h2>
+          <p class="lede">The bots handle forms and emails. A few steps need a human, and a few things can't be removed at all.</p>
+        </div>
+      </div>
+      <div class="limits">
+        <div class="limit"><h3>Verification calls</h3><p>Some sites call your phone and read you a code. Your bot pauses and tells you which code box to fill.</p><span class="sites">Whitepages · MyLife</span></div>
+        <div class="limit"><h3>ID and face uploads</h3><p>Face-search sites want a photo ID or a selfie. The bots never upload either, so these are yours to do or skip.</p><span class="sites">PimEyes · Facecheck</span></div>
+        <div class="limit"><h3>Card-first searches</h3><p>A couple of sites won't show results until you enter a card or start a trial. The bots never pay.</p><span class="sites">Archives · Searchbug</span></div>
+        <div class="limit"><h3>Public records</h3><p>Property and voter records stay public at the county and state, so sites can pick you up again. That's why Watch runs every month.</p><span class="sites">VoterRecords · PropertyRecs</span></div>
+        <div class="limit"><h3>Scam calls</h3><p>Do Not Call stops legitimate telemarketers. Scammers ignore it. Fewer listings means fewer lists selling your number, so calls drop over weeks.</p><span class="sites">donotcall.gov</span></div>
+        <div class="limit"><h3>Links that move</h3><p>Sites change their opt-out pages. Newmoon's added sites are marked, and your bot opens each link first. If one is dead, it finds the site's own opt-out and tells you.</p><span class="sites">marked "check link"</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" style="padding-top:0">
+    <div class="wrap faq">
+      <div class="sec-head" style="margin:0;align-content:start">
+        <div class="eyebrow"><span><b>//</b> questions</span></div>
+        <h2>Before you start</h2>
+      </div>
+      <div>
+        <details open><summary>Is it really free?</summary><p>Newmoon is free, with no account and no tracking. The quick scan works in any Grok account. The full removal runs in Grok Bot, which is an xAI subscription. The $129 comparison is DeleteMe's yearly price for one person.</p></details>
+        <details><summary>Is this made by xAI?</summary><p>No. Newmoon is an independent project built on top of Grok and Grok Bot. It writes the plan and the prompts; Grok does the searching and the filing in your own account.</p></details>
+        <details><summary>Does Newmoon see my name or number?</summary><p>No. This page has no backend. Your plan and progress live in this browser's storage, and the prompt goes only where you paste it. Clear your browser data and it's gone.</p></details>
+        <details><summary>Why do I have to approve everything?</summary><p>Opt-out forms ask for personal details, and some sites use the form to collect more than they had. Your bot shows you each draft with your number masked, and you say yes or no. You can approve a whole site in one go.</p></details>
+        <details><summary>How long until listings come down?</summary><p>Some sites remove you within minutes of the confirmation email. Others take days or a few weeks. Ledger records the date each opt-out was filed, and Watch checks again on the next new moon.</p></details>
+        <details><summary>Can I run it for my parents?</summary><p>Yes, with their permission. Run it in their name with an inbox they can see. Newmoon's rules tell the bots to work on one person only and to ask before touching listings for relatives.</p></details>
+        <details><summary>Where does the site list come from?</summary><p>45 sites come from BADBOOL, the Big Ass Data Broker Opt-Out List by Yael Grauer, a volunteer project kept up since 2017. Newmoon restructures it for bots and keeps its CC BY-NC-SA license. On top of that, Newmoon adds caller-ID apps like Truecaller and Sync.me and other people-search sites; those are marked in the directory. Radaris and Rehold aren't listed because both are offline under a court order.</p></details>
+        <details><summary>I'm outside the US. Does it work?</summary><p>Mostly not. Nearly every site here is a US people-search site. Caller-ID apps like Truecaller work worldwide, so the quick scan and those removals still help.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <div class="wrap">
+      <h2>$0.<br><span>Not $129 a year.</span></h2>
+      <div class="cta" style="margin:0"><a class="btn primary" href="#plan"><span class="sig">$</span> build my plan</a></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div>
+      <p>Newmoon by <a href="https://x.com/lunarresearcher" target="_blank" rel="noopener">@lunarresearcher</a>. An independent project powered by Grok, not affiliated with or endorsed by xAI. Grok and Grok Bot are xAI products.</p>
+      <p>Site list from <a href="https://github.com/yaelwrites/Big-Ass-Data-Broker-Opt-Out-List" target="_blank" rel="noopener">BADBOOL</a> by Yael Grauer, updated September 27, 2026, licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>. Newmoon's adapted directory and prompts are shared under the same license. Sites marked Newmoon were added by Newmoon.</p>
+    </div>
+    <div>
+      <p>Your data stays in this browser. Newmoon doesn't search for anyone. It gives your own Grok Bot a plan for your own records.</p>
+      <p id="foot-moon"></p>
+      <p><a href="docs.html">Documentation</a> · <a href="docs.html#changelog">Changelog</a></p>
+    </div>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- data: BADBOOL, restructured ---------- */
+// tier 1 = crucial, 2 = high priority, 3 = the rest. flags: email (confirm link), url (paste listing URL), phone (verification call),
+// id (photo ID / face), pay (card or trial), account (free account), captcha, dob (asks birthdate)
+const SITES = [
+ ["beenverified","BeenVerified",1,"https://www.beenverified.com/app/optout/search","https://www.beenverified.com/app/optout/search",["email"],"Do people search and property search separately (property: beenverified.com/app/optout/address-search). One opt-out per email address.","PeopleLooker, PeopleSmart"],
+ ["checkpeople","CheckPeople",1,"https://checkpeople.com/privacy-rights","https://checkpeople.com/opt-out",["dob"],"Send a Right to Know request first to see what they hold. The opt-out asks for birthdate and full legal name.",""],
+ ["clustal","Clustal",1,"https://www.clustal.org","https://www.clustal.org/privacy-control",["url","email"],"Open “view full record” and use that URL. Each listing needs its own email address.",""],
+ ["intelius","Intelius",1,"https://www.intelius.com/","https://suppression.peopleconnect.us/login",["email"],"One PeopleConnect request covers the family. Fallback: support@mailer.intelius.com or 1-888-245-1655.","Instant Checkmate, TruthFinder, Classmates, AnyWho, ZabaSearch, US Search, PeopleFinder, Addresses.com"],
+ ["msv","Men Stopping Violence",1,"https://www.menstoppingviolence.org/people/","https://www.menstoppingviolence.org/opt-out/",["url","email"],"Paste the URL of your entry, add an email, then confirm from your inbox.",""],
+ ["mylife","MyLife",1,"https://www.mylife.com","https://www.mylife.com/privacyrequest",["phone"],"Use the privacy request form, or email privacy@mylife.com with your profile link. MyLife pushes for a driver’s license; don’t send one.",""],
+ ["nuwber","Nuwber",1,"https://nuwber.com/","https://nuwber.com/removal/link",["url","email"],"Filter by state to get the person URL. Skip the “full report” upsell. Fallback: screenshot to support@nuwber.com.",""],
+ ["sbc","SmartBackgroundChecks",1,"https://www.smartbackgroundchecks.com/","https://www.smartbackgroundchecks.com/optout",[],"Usually removes you from PeopleFinders too.","PeopleFinders"],
+ ["spokeo","Spokeo",1,"https://www.spokeo.com/search","https://www.spokeo.com/optout",["url","email"],"Paste the profile URL in the “opt out your information” section, then confirm by email. Paid accounts may still see removed data.",""],
+ ["thatsthem","That’s Them",1,"https://thatsthem.com/","https://thatsthem.com/optout",[],"Skip the Spokeo identity-protection link; it’s a paid product.",""],
+ ["whitepages","Whitepages",1,"https://www.whitepages.com/","https://www.whitepages.com/suppression_requests",["phone"],"Verification is an automated call with a code. Check Whitepages Premium separately.","411.com"],
+ ["acxiom","Acxiom",2,"https://www.acxiom.com/optout/","https://www.acxiom.com/optout/",[],"You can’t check for free first. US form here; France, Italy and Spain have their own portals.",""],
+ ["ancestry","Ancestry",2,"https://www.ancestry.com/account/","https://support.ancestry.com/s/reportissue?language=en_US",["account"],"Make a free account (not a trial), collect every record URL with your details, email them to privacy@ancestry.com.",""],
+ ["ftn","FamilyTreeNow",2,"https://www.familytreenow.com/optout","https://www.familytreenow.com/optout",[],"Search and remove from the same page.",""],
+ ["fps","FastPeopleSearch",2,"https://www.fastpeoplesearch.com/","https://www.fastpeoplesearch.com/optout",["captcha"],"Expect a captcha.",""],
+ ["usphonebook","USPhoneBook",2,"https://www.usphonebook.com/","https://www.usphonebook.com/opt-out/",[],"Search by your number. If the form hangs, email support+optout@usphonebook.com.",""],
+ ["archives","Archives",3,"https://www.archives.com/","https://www.archives.com/Optout",["pay"],"Searching needs a free trial with a card. Opt out only if you already know you’re listed.",""],
+ ["classmates","Classmates",3,"https://www.classmates.com/","https://help.classmates.com/hc/en-us/articles/115002224171-How-can-I-cancel-my-membership-",["account"],"Only matters if you ever made an account. Cancel the membership.",""],
+ ["cbc","Cyber Background Checks",3,"https://www.cyberbackgroundchecks.com/","https://www.cyberbackgroundchecks.com/removal",[],"Search, then use the removal page.",""],
+ ["everyjoe","EveryJoe",3,"https://www.everyjoe.com/","https://www.everyjoe.com/do-not-sell/",["url"],"Copy the link of your entry into the do-not-sell page.",""],
+ ["facecheck","Facecheck",3,"https://facecheck.id","https://facecheck.id/Face-Search/RemoveMyPhotos",["id"],"Face search engine. Removal needs an ID card or a selfie. Do this one yourself if you want it.",""],
+ ["familysearch","FamilySearch",3,"https://www.familysearch.org/search/","https://submit-irm.trustarc.com/services/validation/b8d6e704-e5b1-42a0-9f86-bbdec35939a1",["account","url","email"],"Free account, copy the record URLs, submit the form, verify your email.",""],
+ ["fpd","FreePeopleDirectory",3,"https://www.freepeopledirectory.com","https://www.spokeo.com/optout",["url"],"Opt out through Spokeo’s form.",""],
+ ["infotracer","InfoTracer",3,"https://www.infotracer.com","https://infotracer.com/optout/",[],"Online form. Mail or fax forms exist as a fallback.",""],
+ ["npd","National Public Data",3,"https://nationalpublicdata.com/search","https://nationalpublicdata.com/optout.html",["url","email"],"Copy your record’s URL into the form, then verify by email.",""],
+ ["peoplebyname","PeopleByName",3,"https://www.peoplebyname.com/people","https://www.peoplebyname.com/remove.php",[],"One request per record. Shortcut: peoplebyname.com/people/Last/First.",""],
+ ["psn","PeopleSearchNow",3,"https://www.peoplesearchnow.com/","https://www.peoplesearchnow.com/opt-out",[],"Search, then opt out.",""],
+ ["pimeyes","PimEyes",3,"https://pimeyes.com/","https://pimeyes.com/en/opt-out-request-form",["id"],"Face search engine. Opt-out needs a face photo and a blurred ID. Do this one yourself if you want it.",""],
+ ["privateeye","PrivateEye",3,"https://www.privateeye.com/","https://www.privateeye.com/removal",["email"],"They email you a link to a removal form.",""],
+ ["privaterecords","PrivateRecords",3,"https://www.privaterecords.net/name/landing","https://www.privaterecords.net/api/helper/optOutLight/search",[],"Search by name and state.",""],
+ ["propertyrecs","PropertyRecs",3,"https://dashboard.propertyrecs.com/opt-out","https://dashboard.propertyrecs.com/opt-out",[],"Search and opt out on the same page.",""],
+ ["searchbug","Searchbug",3,"https://www.searchbug.com/","https://www.searchbug.com/contact-us.aspx",["pay"],"Searching needs a card. You can ask them to block your listing through the contact form or (760) 454-7301.",""],
+ ["spf","SearchPeopleFree",3,"https://www.searchpeoplefree.com/","https://www.searchpeoplefree.com/opt-out",[],"Search by name, phone, address and email; each can be a separate listing.",""],
+ ["searchquarry","SearchQuarry",3,"https://www.searchquarry.com/","https://members.searchquarry.com/removeMyData/",["email"],"Click the verification link to finish.",""],
+ ["socialcatfish","Social Catfish",3,"https://socialcatfish.com","https://socialcatfish.com/opt-out/",["url","email"],"Note every page URL with your data. Only request removal of what you can already see.",""],
+ ["spyfly","SpyFly",3,"https://www.spyfly.com","https://www.spyfly.com/help-center/privacy-requests",[],"Asks for name, age, address and email. Confirm they have you before giving any of it.",""],
+ ["tps","TruePeopleSearch.com",3,"https://www.truepeoplesearch.com/removal","https://www.truepeoplesearch.com/removal",["captcha"],"Name, city, state and email, then several captchas.",""],
+ ["tpsnet","TruePeopleSearch.net",3,"https://truepeoplesearch.net","https://docs.google.com/forms/d/e/1FAIpQLSeCPggzv4iXE20iUjcr6vdVWxBOblCyGwDLcO-jZA5j2YF5fQ/viewform",["url"],"Close any extra tabs it opens and skip the “top rated” links.",""],
+ ["unpan","UN Public Administration Network",3,"https://unpan.org/","https://unpan.org/opt-out",["url","email"],"Search with first and last name only, then confirm from your inbox.",""],
+ ["usphonebook2","United States Phone Book",3,"https://www.unitedstatesphonebook.com/search.php","https://www.unitedstatesphonebook.com/contact.php",[],"Enter the phone number and ZIP code exactly as listed.",""],
+ ["unmask","UnMask",3,"https://unmask.com/","https://unmask.com/opt-out/",["email","captcha"],"Name, city and state, a couple of captchas, then the email link.",""],
+ ["usaps","USA People Search",3,"https://www.usa-people-search.com/","https://www.usa-people-search.com/removal",[],"Search, then use the removal page.",""],
+ ["veripages","Veripages",3,"https://veripages.com/","https://veripages.com/inner/control-privacy",["url","email","captcha"],"Profile URL, name and email, a captcha, then the email link.",""],
+ ["voterrecords","VoterRecords",3,"https://voterrecords.com/","https://voterrecords.com/",["email"],"Open your record and use “record opt-out” at the bottom. The state voter file itself stays public.",""],
+ ["zoominfo","ZoomInfo",3,"https://privacyrequest.zoominfo.com/remove/verify","https://privacyrequest.zoominfo.com/remove/verify",["email"],"Mostly work profiles. They email you a code if they hold your address.",""]
+].map(([id,name,tier,find,out,flags,note,covers]) => ({id,name,tier,find,out,flags,note,covers,kind:"site",src:"badbool",cat:"people"}));
+// Added by Newmoon (tier 4). Not part of BADBOOL; bots open each link first and report if it moved.
+const ADDED = [
+ ["peekyou","PeekYou","https://www.peekyou.com/","https://www.peekyou.com/about/contact/optout/",["url","email"],"Paste your profile URL. They confirm by email.","people"],
+ ["pipl","Pipl","https://pipl.com/","https://pipl.com/personal-information-removal-request",["email"],"Removal request form. Pipl sells mostly to businesses, so a free search may show little.","people"],
+ ["peoplefinders","PeopleFinders","https://www.peoplefinders.com/","https://www.peoplefinders.com/opt-out",[],"The SmartBackgroundChecks opt-out often clears this too. Check anyway.","people"],
+ ["clustrmaps","ClustrMaps","https://clustrmaps.com/","https://clustrmaps.com/bl/opt-out",["url"],"Search your name and paste your person page URL.","people"],
+ ["neighborreport","Neighbor.report","https://neighbor.report/","https://neighbor.report/remove",["url"],"Listings by street address. Paste your record URL.","people"],
+ ["fbc","FastBackgroundCheck","https://www.fastbackgroundcheck.com/","https://www.fastbackgroundcheck.com/opt-out",["captcha"],"Works like FastPeopleSearch. Expect a captcha.","people"],
+ ["idcrawl","IDCrawl","https://www.idcrawl.com/","https://www.idcrawl.com/opt-out",["url","email"],"Pulls social profiles and phone listings into one page.","people"],
+ ["peoplewhiz","PeopleWhiz","https://www.peoplewhiz.com/","https://www.peoplewhiz.com/optout",["email"],"Opt out by name and state, then the email link.","people"],
+ ["cocofinder","CocoFinder","https://cocofinder.com/","https://cocofinder.com/remove-my-info",["url","email"],"Paste the record URL and confirm by email.","people"],
+ ["kiwisearches","Kiwi Searches","https://www.kiwisearches.com/","https://www.kiwisearches.com/optout",[],"Opt-out form by name and state.","people"],
+ ["persopo","Persopo","https://persopo.com/","https://persopo.com/opt-out",["url","email"],"Paste the profile URL, then confirm by email.","people"],
+ ["officialusa","OfficialUSA","https://www.officialusa.com/","https://www.officialusa.com/opt-out/",["url"],"Paste your listing URL.","people"],
+ ["locatefamily","LocateFamily","https://www.locatefamily.com/","https://www.locatefamily.com/removal.html",["url"],"Old directory site. The removal form takes your listing ID.","people"],
+ ["publicdatausa","PublicDataUSA","https://www.publicdatausa.com/","https://www.publicdatausa.com/remove.php",["url"],"One request per record.","people"],
+ ["usaofficial","USA-Official","https://www.usa-official.com/","https://www.usa-official.com/remove",["url"],"Paste your record URL.","people"],
+ ["publicrecordsnow","PublicRecordsNow","https://www.publicrecordsnow.com/","https://www.publicrecordsnow.com/static/view/optout",[],"Opt-out form by name and address.","people"],
+ ["dataveria","Dataveria","https://dataveria.com/","https://dataveria.com/ng/control/privacy",["url","email"],"Same network as Verecor, Virtory and Vericora. Each one needs its own request.","people"],
+ ["verecor","Verecor","https://verecor.com/","https://verecor.com/ng/control/privacy",["url","email"],"Same form as Dataveria.","people"],
+ ["virtory","Virtory","https://virtory.com/","https://virtory.com/ng/control/privacy",["url","email"],"Same form as Dataveria.","people"],
+ ["vericora","Vericora","https://vericora.com/","https://vericora.com/ng/control/privacy",["url","email"],"Same form as Dataveria.","people"],
+ ["neighborwho","NeighborWho","https://www.neighborwho.com/","https://www.neighborwho.com/app/optout/search",["email"],"BeenVerified's address site. Property listings can need their own opt-out.","people"],
+ ["ownerly","Ownerly","https://www.ownerly.com/","https://www.ownerly.com/app/optout/search",["email"],"BeenVerified's home-owner site. Search your home address.","people"],
+ ["truecaller","Truecaller","https://www.truecaller.com/","https://www.truecaller.com/unlisting",["captcha"],"Caller-ID app used worldwide. Unlisting removes your number from search. If you use the app, deactivate your account in it first.","callerid"],
+ ["syncme","Sync.me","https://sync.me/","https://sync.me/optout",["captcha"],"Caller-ID app. Removes your name and number from search.","callerid"],
+ ["numlookup","NumLookup","https://www.numlookup.com/","https://www.numlookup.com/opt-out",[],"Free reverse phone lookup. Opt out by number.","callerid"],
+ ["spytox","Spytox","https://www.spytox.com/","https://www.spytox.com/opt-out",["email"],"Reverse phone and people lookup.","callerid"],
+ ["lexisnexis","LexisNexis","https://consumer.risk.lexisnexis.com/","https://optout.lexisnexis.com/",["id"],"Feeds background-check and marketing lists. The form can ask for an SSN or license number; bots won't enter either.","marketing"],
+ ["epsilon","Epsilon","https://www.epsilon.com/us/consumer-preference-center","https://www.epsilon.com/us/consumer-preference-center",["email"],"Marketing data broker. Opt out of data sharing in its consumer preference center.","marketing"]
+].map(([id,name,find,out,flags,note,cat]) => ({id,name,tier:4,find,out,flags,note,covers:"",kind:"site",src:"nm",cat}));
+SITES.push(...ADDED);
+
+const REG = [
+ {id:"dnc",name:"National Do Not Call Registry",find:"https://www.donotcall.gov/",out:"https://www.donotcall.gov/",flags:["email"],note:"Free, one time. Click the confirmation email within 72 hours.",covers:"",kind:"reg"},
+ {id:"google",name:"Google “Results about you”",find:"https://support.google.com/websearch/answer/12719076",out:"https://support.google.com/websearch/answer/12719076",flags:["account"],note:"Ask Google to drop search results that show your phone or address.",covers:"",kind:"reg"},
+ {id:"drop",name:"California DROP portal",find:"http://consumer.drop.privacy.ca.gov",out:"http://consumer.drop.privacy.ca.gov",flags:[],note:"California residents: one request to 500+ registered data brokers.",covers:"",kind:"reg",ca:true},
+ {id:"prescreen",name:"OptOutPrescreen",find:"https://www.optoutprescreen.com/",out:"https://www.optoutprescreen.com/",flags:[],note:"Stops prescreened credit and insurance offers. The 5-year electronic opt-out is free. Skip any field asking for an SSN.",covers:"",kind:"reg"}
+];
+// Phone settings: two minutes, done by you. Nothing for a bot to file.
+const PHONE = [
+ {id:"spamfilter",name:"Turn on spam filtering",find:"",out:"",flags:[],note:"iPhone: Settings → Apps → Phone → Silence Unknown Callers. Android: Phone app → Settings → Caller ID & spam → Filter spam calls.",covers:"",kind:"phone"},
+ {id:"carrier",name:"Your carrier's free blocker",find:"",out:"",flags:[],note:"T-Mobile Scam Shield, Verizon Call Filter or AT&T ActiveArmor. Install it and switch on spam blocking.",covers:"",kind:"phone"}
+];
+
+const FLAG = {check:["check link",0],email:["email link",0],url:["listing url",0],phone:["phone call",1],id:["photo id",1],pay:["card",1],account:["free account",0],captcha:["captcha",0],dob:["birthdate",0]};
+const DEPTHS = [
+  {id:"crucial",t:"Crucial",d:"the sites BADBOOL marks crucial",max:1},
+  {id:"priority",t:"Priority",d:"crucial plus high priority",max:2},
+  {id:"all",t:"Full BADBOOL",d:"the whole BADBOOL list",max:3},
+  {id:"max",t:"Max",d:"plus caller-ID apps and Newmoon additions",max:4}
+];
+const STATUS = [["todo","to do"],["listed","listed"],["notlisted","not listed"],["filed","filed"],["confirmed","confirmed"],["removed","removed"],["needsyou","needs you"],["skip","skip"]];
+const WEIGHT = {todo:1,listed:1,needsyou:1,filed:.55,confirmed:.25,removed:0,notlisted:0};
+const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split(" ");
+
+const CREW = [
+ {id:"scout",n:"01",name:"Scout",tag:"search",line:["searches every site","in your plan"],when:"first, then every new moon",job:"Searches each site in your plan by name and city, by phone, and by address. Saves the URL of every listing it finds and a screenshot.",never:"Searches for anyone but you."},
+ {id:"filer",n:"02",name:"Filer",tag:"opt-out",line:["files the opt-out","on every listing"],when:"after Scout",job:"Fills each site's own opt-out form using only details the listing already shows. Shows you the draft, with your number masked, before it sends.",never:"Submits anything without your yes."},
+ {id:"clerk",n:"03",name:"Clerk",tag:"confirm",line:["clicks the email","so it sticks"],when:"while opt-outs are pending",job:"Watches the opt-out inbox for confirmation emails from plan sites and clicks the link after you approve. Flags anything that never arrives.",never:"Opens any other email in your inbox."},
+ {id:"registry",n:"04",name:"Registry",tag:"do-not-call",line:["national registry,","free, one time"],when:"once",job:"Registers your number on the National Do Not Call Registry, files Google's “Results about you” request, and the DROP portal if you live in California.",never:"Hands over an SSN, ID or card number."},
+ {id:"watch",n:"05",name:"Watch",tag:"recheck",line:["checks again on","every new moon"],when:"every new moon",job:"Re-searches every site marked removed or not listed. If a listing came back, it reopens the site for Filer and tells you.",never:"Re-files without asking you first."},
+ {id:"ledger",n:"06",name:"Ledger",tag:"report",line:["one sheet, every","line has proof"],when:"after every run",job:"Keeps one table: site, status, listing URL, filed date, confirmed date, proof. Sends it as one message at the end of each run.",never:"Marks a site removed without proof."}
+];
+
+/* ---------- utilities ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const host = u => { try { return new URL(u).hostname.replace(/^www\./,""); } catch(e) { return u; } };
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const framed = (() => { try { return window.self !== window.top; } catch(e) { return true; } })();
+const SITE_URL = (!framed && /^https?:$/.test(location.protocol)) ? location.origin : "https://newmoon.tools";
+// After you build the Newmoon bot in your own Grok Bot, paste its x.ai share link here to show the one-click button.
+const GROK_BOT_SHARE = "";
+const toastEl = $("#toast"); let toastT;
+function toast(msg){ toastEl.textContent = msg; toastEl.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("show"), 2200); }
+async function copy(text, label){
+  try { await navigator.clipboard.writeText(text); toast(label || "Copied"); }
+  catch(e){
+    const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand("copy"); } catch(_){}
+    ta.remove(); toast(ok ? (label || "Copied") : "Copy blocked here. Select the text and copy it by hand.");
+  }
+}
+// Downloads work on your own domain. Inside an embedded preview they're blocked, so copy instead.
+function saveOrCopy(name, mime, text, what){
+  if (framed) { copy(text, what + " copied (downloads are blocked in this preview)"); return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], {type:mime})); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast("Saved " + name);
+}
+
+/* ---------- new moons (Meeus, Astronomical Algorithms ch. 49) ---------- */
+function newMoons(from, n){
+  const rad = Math.PI/180, out = [], s = Math.sin;
+  let k = Math.floor((from.getUTCFullYear() + from.getUTCMonth()/12 - 2000) * 12.3685) - 1;
+  while (out.length < n){
+    const T = k/1236.85, T2 = T*T, T3 = T2*T, T4 = T3*T;
+    let jde = 2451550.09766 + 29.530588861*k + 0.00015437*T2 - 0.00000015*T3 + 0.00000000073*T4;
+    const E = 1 - 0.002516*T - 0.0000074*T2;
+    const M = (2.5534 + 29.1053567*k - 0.0000014*T2 - 0.00000011*T3)*rad;
+    const Mp = (201.5643 + 385.81693528*k + 0.0107582*T2 + 0.00001238*T3 - 0.000000058*T4)*rad;
+    const F = (160.7108 + 390.67050284*k - 0.0016118*T2 - 0.00000227*T3 + 0.000000011*T4)*rad;
+    const O = (124.7746 - 1.56375588*k + 0.0020672*T2 + 0.00000215*T3)*rad;
+    jde += -0.4072*s(Mp) + 0.17241*E*s(M) + 0.01608*s(2*Mp) + 0.01039*s(2*F) + 0.00739*E*s(Mp-M) - 0.00514*E*s(Mp+M)
+      + 0.00208*E*E*s(2*M) - 0.00111*s(Mp-2*F) - 0.00057*s(Mp+2*F) + 0.00056*E*s(2*Mp+M) - 0.00042*s(3*Mp) + 0.00042*E*s(M+2*F)
+      + 0.00038*E*s(M-2*F) - 0.00024*E*s(2*Mp-M) - 0.00017*s(O) - 0.00007*s(Mp+2*M) + 0.00004*s(2*Mp-2*F) + 0.00004*s(3*M)
+      + 0.00003*s(Mp+M-2*F) + 0.00003*s(2*Mp+2*F) - 0.00003*s(Mp+M+2*F) + 0.00003*s(Mp-M+2*F) - 0.00002*s(Mp-M-2*F) - 0.00002*s(3*Mp+M) + 0.00002*s(4*Mp);
+    const d = new Date((jde - 2440587.5)*864e5 - 69e3); // TT to UTC, ΔT ≈ 69 s
+    if (d > from) out.push(d);
+    k++;
+  }
+  return out;
+}
+const MOONS = newMoons(new Date(), 13);
+const fmtDay = d => d.toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"});
+const fmtShort = d => d.toLocaleDateString("en-US", {month:"short", day:"numeric"});
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+/* ---------- the moon ---------- */
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let TEX = null;
+function texture(){
+  if (TEX) return TEX;
+  const S = 720, R = S/2, c = document.createElement("canvas"); c.width = c.height = S;
+  const g = c.getContext("2d"), r = rng(29);
+  g.save(); g.beginPath(); g.arc(R,R,R,0,Math.PI*2); g.clip();
+  let gr = g.createRadialGradient(R*.86,R*.82,0,R,R,R);
+  gr.addColorStop(0,"#f4efe3"); gr.addColorStop(.72,"#ddd6c6"); gr.addColorStop(1,"#a8a191");
+  g.fillStyle = gr; g.fillRect(0,0,S,S);
+  // maria, roughly where they sit on the near side
+  const maria = [[-.32,-.38,.27],[.07,-.34,.16],[.22,-.1,.19],[.6,-.26,.1],[.47,.13,.14],[.3,.27,.08],[-.56,.02,.33],[-.18,.33,.15],[-.48,.4,.08],[-.1,-.67,.09],[-.05,-.12,.08],[-.7,-.3,.12]];
+  // maria go on their own layer and get blurred together, so they read as plains instead of spots
+  const mc = document.createElement("canvas"); mc.width = mc.height = S; const mg = mc.getContext("2d");
+  for (const [x,y,m] of maria){
+    for (let i=0;i<16;i++){
+      const px = R + (x + (r()-.5)*m*1.1)*R, py = R + (y + (r()-.5)*m*1.1)*R, pr = m*R*(.55+r()*.6);
+      mg.fillStyle = "rgba(118,112,102,.16)"; mg.beginPath(); mg.arc(px,py,pr,0,Math.PI*2); mg.fill();
+    }
+  }
+  g.globalCompositeOperation = "multiply"; g.filter = `blur(${R*.035}px)`; g.drawImage(mc,0,0); g.filter = "none";
+  g.globalCompositeOperation = "source-over";
+  for (let i=0;i<700;i++){
+    const a = r()*Math.PI*2, d = Math.sqrt(r())*.97, cr = R*(.003 + Math.pow(r(),4)*.04);
+    const x = R + Math.cos(a)*d*R, y = R + Math.sin(a)*d*R;
+    g.fillStyle = "rgba(70,64,56,.075)"; g.beginPath(); g.arc(x+cr*.2,y+cr*.2,cr,0,Math.PI*2); g.fill();
+    g.fillStyle = "rgba(255,252,244,.07)"; g.beginPath(); g.arc(x-cr*.15,y-cr*.15,cr*.85,0,Math.PI*2); g.fill();
+  }
+  // Tycho and Copernicus, with faint rays
+  for (const [x,y,len] of [[-.12,.72,.9],[-.28,-.05,.45],[-.62,-.12,.35]]){
+    const cx = R + x*R, cy = R + y*R;
+    g.strokeStyle = "rgba(255,250,240,.05)"; g.lineWidth = 1.4;
+    for (let i=0;i<26;i++){ const a = r()*Math.PI*2, l = (len*.4 + r()*len*.6)*R; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*l, cy+Math.sin(a)*l); g.stroke(); }
+    const t = g.createRadialGradient(cx,cy,0,cx,cy,R*.035); t.addColorStop(0,"rgba(255,253,246,.85)"); t.addColorStop(1,"rgba(255,253,246,0)");
+    g.fillStyle = t; g.beginPath(); g.arc(cx,cy,R*.035,0,Math.PI*2); g.fill();
+  }
+  const id = g.getImageData(0,0,S,S), p = id.data;
+  for (let i=0;i<p.length;i+=4){ const n = (r()-.5)*10; p[i]+=n; p[i+1]+=n; p[i+2]+=n; }
+  g.putImageData(id,0,0);
+  gr = g.createRadialGradient(R,R,R*.55,R,R,R);
+  gr.addColorStop(0,"rgba(0,0,0,0)"); gr.addColorStop(1,"rgba(20,18,30,.38)");
+  g.fillStyle = gr; g.fillRect(0,0,S,S);
+  g.restore();
+  return TEX = c;
+}
+// k = lit fraction, 1 = full, 0 = new. Waning: the lit side stays on the left, as it does in the northern sky.
+function drawMoon(cv, k, glow){
+  const W = cv.width, x = cv.getContext("2d"), R = W*(glow ? .36 : .46), C = W/2, tex = texture();
+  x.clearRect(0,0,W,W);
+  if (glow){
+    const h = x.createRadialGradient(C,C,R*.9,C,C,W/2);
+    h.addColorStop(0,`rgba(239,233,220,${.05 + .13*k})`); h.addColorStop(1,"rgba(239,233,220,0)");
+    x.fillStyle = h; x.fillRect(0,0,W,W);
+  }
+  x.globalAlpha = .075; x.drawImage(tex, C-R, C-R, R*2, R*2); x.globalAlpha = 1;
+  x.strokeStyle = "rgba(239,233,220,.16)"; x.lineWidth = Math.max(1, W/400); x.beginPath(); x.arc(C,C,R,0,Math.PI*2); x.stroke();
+  if (k <= 0.004) return;
+  const m = document.createElement("canvas"); m.width = m.height = W; const y = m.getContext("2d");
+  const rx = R*Math.abs(2*k-1);
+  y.filter = `blur(${Math.max(1, R*.018)}px)`;
+  y.beginPath(); y.arc(C,C,R,-Math.PI/2,Math.PI/2,true);
+  if (k > .5) y.ellipse(C,C,rx,R,0,Math.PI/2,-Math.PI/2,true); else y.ellipse(C,C,rx,R,0,Math.PI/2,Math.PI*1.5,false);
+  y.closePath(); y.fillStyle = "#fff"; y.fill(); y.filter = "none";
+  y.globalCompositeOperation = "source-in"; y.drawImage(tex, C-R, C-R, R*2, R*2);
+  x.drawImage(m,0,0);
+}
+let shownK = 1, animK = null;
+function moonTo(k){
+  const sm = $("#moon-sm");
+  if (reduce){ shownK = k; Orbit.setK(k); drawMoon(sm,k,false); return; }
+  if (Math.abs(shownK - k) < .001){ Orbit.setK(k); drawMoon(sm,k,false); return; }
+  const from = shownK, t0 = performance.now(), dur = 900 + Math.abs(from-k)*900;
+  cancelAnimationFrame(animK);
+  const step = now => {
+    const t = Math.min(1,(now-t0)/dur), e = 1 - Math.pow(1-t,3);
+    shownK = from + (k-from)*e; Orbit.setK(shownK); drawMoon(sm,shownK,false);
+    if (t < 1) animK = requestAnimationFrame(step);
+  };
+  animK = requestAnimationFrame(step);
+}
+
+/* ---------- state ---------- */
+const KEY = "newmoon.v1";
+const EXAMPLE = {beenverified:"removed",checkpeople:"notlisted",clustal:"filed",intelius:"confirmed",msv:"notlisted",mylife:"needsyou",nuwber:"filed",spokeo:"removed",thatsthem:"notlisted",whitepages:"needsyou",fps:"listed",dnc:"removed"};
+function fresh(){ return {v:1, example:true, me:{first:"",last:"",aka:"",city:"",state:"",phone:"",email:""}, depth:"priority", status:Object.fromEntries(Object.entries(EXAMPLE).map(([k,v]) => [k,{s:v,t:""}]))}; }
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw){ const p = JSON.parse(raw); if (p && p.v === 1) S = Object.assign(fresh(), p, {me:Object.assign(fresh().me, p.me || {})}); } } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+function planItems(){
+  const d = DEPTHS.find(x => x.id === S.depth) || DEPTHS[1];
+  const regs = REG.filter(r => !r.ca || S.me.state === "CA");
+  return {regs, phone: PHONE, sites: SITES.filter(s => s.tier <= d.max)};
+}
+const st = id => (S.status[id] && S.status[id].s) || "todo";
+function tally(){
+  const {regs, phone, sites} = planItems(), all = [...phone, ...regs, ...sites];
+  let lit = 0, n = 0; const c = {left:0, filed:0, clear:0, you:0};
+  for (const it of all){
+    const s = st(it.id); if (s === "skip") continue;
+    n++; lit += WEIGHT[s];
+    if (s === "removed" || s === "notlisted") c.clear++;
+    else if (s === "filed" || s === "confirmed") c.filed++;
+    else { c.left++; if (s === "needsyou") c.you++; }
+  }
+  return {all, k: n ? lit/n : 0, n, ...c};
+}
+
+/* ---------- planner UI ---------- */
+const meName = () => [S.me.first, S.me.last].filter(Boolean).join(" ");
+function renderWho(){
+  const m = S.me, place = [m.city, m.state].filter(Boolean).join(", ");
+  $("#who").innerHTML = (m.first || m.last) ? `Plan for <b>${esc(meName())}</b>${place ? ", " + esc(place) : ""} <a href="#top">edit</a>` : `Add your name at the top first. <a href="#top">go</a>`;
+  const eye = $("#hero-eye");
+  eye.innerHTML = m.first ? `<b>//</b> <span class="hello">hi ${esc(m.first)}</span> · your plan has ${tally().n} stops` : `<b>//</b> your privacy assistant, powered by Grok`;
+}
+function renderForm(){
+  $("#f-state").innerHTML = `<option value="">pick</option>` + STATES.map(s => `<option${S.me.state===s?" selected":""}>${s}</option>`).join("");
+  for (const k of ["first","last","city","aka","phone","email"]) $("#f-"+k).value = S.me[k] || "";
+  $("#depth").innerHTML = DEPTHS.map(d => {
+    const n = SITES.filter(s => s.tier <= d.max).length;
+    return `<input type="radio" name="depth" id="dp-${d.id}" value="${d.id}"${S.depth===d.id?" checked":""}><label for="dp-${d.id}"><span class="r"></span><span class="t">${d.t}<small>${d.d}</small></span><span class="c">${n}</span></label>`;
+  }).join("");
+}
+function flagsHtml(flags){
+  return flags.length ? `<span class="flags">${flags.map(f => `<span class="flag${FLAG[f][1]?" you":""}">${FLAG[f][0]}</span>`).join("")}</span>` : "";
+}
+function rowHtml(it, i){
+  const s = st(it.id);
+  return `<li data-id="${it.id}"><span class="ix">${String(i).padStart(2,"0")}</span>
+    <span class="nm"><b>${esc(it.name)}</b>${flagsHtml(it.src === "nm" ? [...it.flags, "check"] : it.flags)}${it.covers ? `<span class="cov">also covers ${esc(it.covers)}</span>` : it.kind === "phone" ? `<span class="cov">${esc(it.note)}</span>` : ""}</span>
+    <span class="links">${it.find && it.find !== it.out ? `<a href="${esc(it.find)}" target="_blank" rel="noopener noreferrer">find ↗</a>` : ""}${it.out ? `<a class="out" href="${esc(it.out)}" target="_blank" rel="noopener noreferrer">${it.kind==="reg"?"open":"opt out"} ↗</a>` : ""}</span>
+    <select class="status" aria-label="Status for ${esc(it.name)}" data-s="${s}">${STATUS.map(([v,l]) => `<option value="${v}"${v===s?" selected":""}>${l}</option>`).join("")}</select></li>`;
+}
+function renderPlan(){
+  const {regs, phone, sites} = planItems();
+  let i = 0;
+  $("#plan-list").innerHTML =
+    `<div class="grp"><span>Your phone · you, 2 minutes</span><span>${phone.length}</span></div><ol class="plan">${phone.map(r => rowHtml(r, ++i)).join("")}</ol>` +
+    `<div class="grp"><span>Registries · bot 04</span><span>${regs.length}</span></div><ol class="plan">${regs.map(r => rowHtml(r, ++i)).join("")}</ol>` +
+    `<div class="grp"><span>People-search sites · bots 01–03</span><span>${sites.length}</span></div><ol class="plan">${sites.map(s => rowHtml(s, ++i)).join("")}</ol>`;
+  renderSummary();
+}
+function renderSummary(){
+  const t = tally();
+  $("#b-left").textContent = t.left; $("#b-filed").textContent = t.filed; $("#b-clear").textContent = t.clear; $("#b-you").textContent = t.you;
+  $("#b-moons").innerHTML = t.all.map(it => `<i data-s="${st(it.id)}" title="${esc(it.name)}: ${st(it.id)}"></i>`).join("");
+  $("#example").hidden = !S.example;
+  const pct = Math.round(t.k*100);
+  $("#e-lit").textContent = pct + "%";
+  $("#e-left").textContent = `${t.left + t.filed} of ${t.n}`;
+  $("#e-next").textContent = "new moon · " + fmtShort(MOONS[0]);
+  const d = DEPTHS.find(x => x.id === S.depth);
+  $("#e-plan").innerHTML = S.example ? `<span class="tag">example</span> · ${d.t.toLowerCase()}` : esc(meName() || "yours") + " · " + d.t.toLowerCase();
+  moonTo(t.k);
+  renderWho(); renderLinks(t); Orbit.sync();
+}
+const onInput = e => {
+  const el = e.target;
+  if (el.name === "depth"){ S.depth = el.value; save(); renderPlan(); renderKit(); Orbit.build(0); return; }
+  const k = el.id && el.id.startsWith("f-") ? el.id.slice(2) : null;
+  if (!k) return;
+  S.me[k] = el.value.trim(); save(); renderKit(); Orbit.build();
+  if (k === "state") renderPlan(); else renderSummary();
+};
+$("#form").addEventListener("input", onInput);
+$("#start").addEventListener("input", onInput);
+$("#start").addEventListener("submit", e => { e.preventDefault(); $("#scan").click(); });
+$("#form").addEventListener("submit", e => e.preventDefault());
+$("#plan-list").addEventListener("change", e => {
+  const sel = e.target.closest("select.status"); if (!sel) return;
+  const id = sel.closest("li").dataset.id;
+  if (S.example){ S.example = false; S.status = {}; }
+  S.status[id] = {s: sel.value, t: isoDay(new Date())};
+  save(); renderPlan(); renderKit();
+});
+$("#ex-clear").addEventListener("click", () => { S.example = false; S.status = {}; save(); renderPlan(); renderKit(); toast("Example cleared"); });
+let resetArm = 0;
+$("#x-reset").addEventListener("click", e => {
+  if (Date.now() - resetArm > 3000){ resetArm = Date.now(); e.currentTarget.textContent = "click again to reset"; setTimeout(() => { e.target.textContent = "reset"; }, 3000); return; }
+  S = fresh(); S.example = false; S.status = {}; save(); renderForm(); renderPlan(); renderKit(); e.currentTarget.textContent = "reset"; toast("Plan reset");
+});
+
+/* ---------- exports ---------- */
+function csv(){
+  const {all} = tally(), q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const rows = [["#","site","status","updated","opt-out link","notes"]];
+  all.forEach((it,i) => rows.push([i+1, it.name, st(it.id).replace("notlisted","not listed").replace("needsyou","needs you"), (S.status[it.id]||{}).t || "", it.out, it.note]));
+  return rows.map(r => r.map(q).join(",")).join("\r\n");
+}
+function ics(){
+  const now = new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
+  const ev = MOONS.slice(0,12).map(d => {
+    const a = isoDay(d).replace(/-/g,""), n = new Date(d.getTime()+864e5), b = isoDay(n).replace(/-/g,"");
+    return ["BEGIN:VEVENT",`UID:newmoon-${a}@newmoon`,`DTSTAMP:${now}`,`DTSTART;VALUE=DATE:${a}`,`DTEND;VALUE=DATE:${b}`,"SUMMARY:Newmoon recheck","DESCRIPTION:New moon. Tell your Grok Bot: newmoon\\, run Watch.","END:VEVENT"].join("\r\n");
+  });
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Newmoon//Recheck//EN","CALSCALE:GREGORIAN",...ev,"END:VCALENDAR"].join("\r\n");
+}
+$("#x-csv").addEventListener("click", () => saveOrCopy("newmoon-ledger.csv","text/csv",csv(),"Ledger"));
+$("#x-ics").addEventListener("click", () => saveOrCopy("newmoon-rechecks.ics","text/calendar",ics(),"Calendar"));
+$("#x-json").addEventListener("click", () => saveOrCopy("newmoon-backup.json","application/json",JSON.stringify(S,null,2),"Backup"));
+$("#x-import").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try { const p = JSON.parse(rd.result); if (!p || p.v !== 1 || typeof p.status !== "object") throw 0;
+      S = Object.assign(fresh(), p, {me:Object.assign(fresh().me, p.me || {})}); save(); renderForm(); renderPlan(); renderKit(); toast("Plan restored");
+    } catch(_){ toast("That file isn't a Newmoon backup. Pick the .json you saved from this page."); }
+    e.target.value = "";
+  };
+  rd.readAsText(f);
+});
+
+/* ---------- prompts ---------- */
+const RULES = [
+  "Act only for me, the person named in ABOUT ME. Never search for or file anything about anyone else. If a listing is a relative, ask before touching it.",
+  "Never submit a form, send an email or click a confirmation link until I say yes in this chat. I can approve one site, or say “yes to all” for the current batch.",
+  "Show every draft before sending: the site, the form or address, and every field you will fill. In chat, mask my phone so only the last two digits show, like (XXX) •••-••41.",
+  "Never upload a photo ID, a selfie or any picture of my face. Never pay, enter a card or start a trial. If a site requires any of that, mark it NEEDS YOU and move on.",
+  "Give a site only what its listing already shows about me. Before opting out, confirm the listing exists and matches me.",
+  "If a site wants a phone verification call or a captcha you can't solve, stop, give me the exact link and what to type, and wait.",
+  "Every ledger line links to its proof: the listing URL, a screenshot, or the confirmation email.",
+  "Plan entries marked “check link” were added by Newmoon. Open the link first. If it's dead or moved, find the site's own opt-out or “Do Not Sell” link in its footer, show it to me, and note it in the ledger."
+];
+function aboutMe(){
+  const m = S.me, ph = v => v || "[ask me]";
+  return [
+    `Name: ${m.first || m.last ? meName() : "[ask me]"}`,
+    `Other names: ${m.aka || "none"}`,
+    `City / state: ${m.city || "[ask me]"}, ${m.state || "[ask me]"}`,
+    `Phone to remove: ${ph(m.phone)}`,
+    `Email for opt-outs: ${m.email || "[ask me. Suggest a spare inbox if I don't have one]"}`
+  ].join("\n");
+}
+function planText(){
+  const {regs, sites} = planItems(); let i = 0; const L = [];
+  L.push("My phone (I do these myself; remind me once)");
+  for (const r of PHONE) L.push(`${++i}. ${r.name}: ${r.note}`);
+  L.push("", "Registries (bot 04)");
+  for (const r of regs) L.push(`${++i}. ${r.name}\n   open: ${r.out}\n   note: ${r.note}`);
+  L.push("", "People-search sites (bots 01-03), in this order");
+  for (const s of sites){
+    const fl = s.src === "nm" ? [...s.flags, "check"] : s.flags;
+    const f = fl.length ? `\n   needs: ${fl.map(x => FLAG[x][0]).join(", ")}` : "";
+    const done = st(s.id) !== "todo" ? `\n   current status: ${st(s.id).toUpperCase()}` : "";
+    L.push(`${++i}. ${s.name}${s.covers ? ` (also covers ${s.covers})` : ""}\n   find: ${s.find}\n   opt out: ${s.out}${f}\n   note: ${s.note}${S.example ? "" : done}`);
+  }
+  return L.join("\n");
+}
+const STATUS_WORDS = "LISTED, NOT LISTED, FILED, CONFIRMED, REMOVED, NEEDS YOU, RETRY";
+function mainPrompt(){
+  const next = MOONS.slice(0,3).map(fmtDay).join(", ");
+  return `NEWMOON
+You are Newmoon, a crew of six bots that removes my phone number and home address from people-search sites, then keeps them off. Work through the crew in order and report in short messages.
+
+ABOUT ME
+${aboutMe()}
+
+RULES (every bot, every time)
+${RULES.map((r,i) => `${i+1}. ${r}`).join("\n")}
+
+THE CREW
+01 Scout: search each plan site for my name + city, my phone and my address. For each site report LISTED (with URL + screenshot), NOT LISTED, or UNSURE.
+02 Filer: for every LISTED site, prepare the opt-out using the link in the plan. Show me the draft. Submit only after my yes.
+03 Clerk: watch the opt-out inbox. Open confirmation emails from plan sites only and click the link after my yes. Flag any that don't arrive within 48 hours.
+04 Registry: register my phone at donotcall.gov and confirm the email within 72 hours. Then the other registries listed in the plan.
+05 Watch: on every new moon (next: ${next}), re-search every site marked REMOVED or NOT LISTED. If a listing is back, reopen it for Filer and tell me.
+06 Ledger: keep one table with columns site | status | listing URL | filed | confirmed | proof | next check. Statuses: ${STATUS_WORDS}. Send it as one message at the end of each run.
+
+COMMANDS I MAY USE
+start: run Registry, then Scout on the first five sites
+status: one line per bot, what it's doing and what's waiting on me
+what needs me: every NEEDS YOU item with the exact link and the step I have to do
+yes / no: approve or reject the current draft
+yes to all <site>: approve every draft for that site; "yes to all" alone approves the current batch
+skip <site>: mark it SKIPPED and move on
+ledger: send the table now
+watch now: run Watch immediately instead of waiting for the new moon
+pause / resume: stop every bot / carry on
+
+THE PLAN
+${planText()}
+
+START
+Run Registry first, then Scout on the first five sites. Stop and show me what you found before anything is filed.`;
+}
+function scanPrompt(){
+  const m = S.me, who = meName() || "[my name]", place = [m.city || "[my city]", m.state || "[my state]"].join(", ");
+  return `I'm ${who} from ${place}. I want to see where my phone number and home address are exposed online so I can remove them.
+
+Search these people-search sites for my name and city: Whitepages, Spokeo, BeenVerified, FastPeopleSearch, TruePeopleSearch, Intelius, MyLife, Nuwber, That's Them, USPhoneBook, SmartBackgroundChecks, ClustrMaps, CyberBackgroundChecks, SearchPeopleFree, PeopleSearchNow.
+
+For each site give me: listed / not listed / unsure, what it shows (phone, address, age, relatives), and the official opt-out link. Don't open paid reports. Only look for me.
+
+End with a short table and the three sites I should opt out of first.
+
+Full removal plan for Grok Bot: ${SITE_URL}`;
+}
+function scanUrl(){ return "https://grok.com/?q=" + encodeURIComponent(scanPrompt()); }
+function shareText(t){
+  if (S.example || !(t.clear + t.filed)) return `I'm taking my phone number off ${SITES.length} people-search sites with @grok. Free plan, nothing leaves your browser: ${SITE_URL}`;
+  const filed = t.filed ? `, ${t.filed} more filed` : "";
+  return `${t.clear} of ${t.n} cleared${filed}. Taking my phone number off people-search sites with @grok and Newmoon. My moon is ${Math.round(t.k*100)}% lit. ${SITE_URL}`;
+}
+function renderLinks(t){
+  const u = scanUrl();
+  for (const id of ["#scan","#scan-2"]) $(id).href = u;
+  $("#x-share").href = "https://x.com/intent/post?text=" + encodeURIComponent(shareText(t || tally()));
+}
+function onScan(e){
+  if (!S.me.first && !S.me.last){ e.preventDefault(); $("#f-first").focus(); toast("Type your name first, then Grok knows who to look for."); return; }
+  Orbit.send();
+  copy(scanPrompt(), "Opening Grok. The prompt is copied too, paste it if the box is empty.");
+}
+$("#scan").addEventListener("click", onScan);
+$("#scan-2").addEventListener("click", onScan);
+if (GROK_BOT_SHARE){ $("#bot-add").href = GROK_BOT_SHARE; $("#bot-add").hidden = false; }
+function botPrompt(b){
+  const extra = {
+    scout:`HOW
+- Search each site three ways where it allows: name + city/state, phone number, home address.
+- Open the closest matches. A match needs my name plus my city, phone or a past address.
+- Save the listing URL and a screenshot. Note which details it shows: phone, address, relatives, age.
+- Hand every LISTED site to Filer in plan order.`,
+    filer:`HOW
+- Use the opt-out link from the plan, never a link from an ad or a search result.
+- Fill only the fields the form needs, using details the listing already shows.
+- Draft first: site, form URL, every field and value. Wait for my yes, then submit.
+- If the site sends a confirmation email, tell Clerk. If it needs a call, ID, card or a captcha you can't solve, mark NEEDS YOU.`,
+    clerk:`HOW
+- Read only emails from the domains of sites in the plan, plus donotcall.gov.
+- For each one, show me the sender, subject and the link you plan to click. Click after my yes.
+- After clicking, screenshot the result page and pass it to Ledger.
+- If 48 hours pass with no email for a filed site, tell me and ask Filer to retry once.`,
+    registry:`HOW
+- donotcall.gov: register the phone in ABOUT ME and confirm the email within 72 hours.
+- Google “Results about you”: only if I'm signed in to Google in your browser. Request removal of results showing my phone or home address.
+- California DROP portal: only if my state is CA.
+- Never enter an SSN, ID number or card.`,
+    watch:`HOW
+- Runs on every new moon. Next three: ${MOONS.slice(0,3).map(fmtDay).join(", ")}.
+- Re-search every site marked REMOVED or NOT LISTED the same three ways Scout does.
+- If a listing is back, mark it RETRY, attach the new URL and screenshot, and hand it to Filer. Don't file anything yourself.
+- If nothing came back, say so in one line.`,
+    ledger:`HOW
+- Keep one table: site | status | listing URL | filed | confirmed | proof | next check.
+- Statuses: ${STATUS_WORDS}.
+- Never mark REMOVED without proof: a re-search that comes up empty, with a screenshot.
+- At the end of each run send the table as one message, then one line: removed, pending, needs me, next check date.`
+  }[b.id];
+  return `NEWMOON · ${b.n} ${b.name.toUpperCase()}
+You are ${b.name}, bot ${b.n} of 6 in Newmoon. Newmoon removes my phone number and home address from people-search sites and keeps them off.
+
+YOUR JOB
+${b.job}
+
+${extra}
+
+ABOUT ME
+${aboutMe()}
+
+RULES
+${RULES.map((r,i) => `${i+1}. ${r}`).join("\n")}
+${b.id === "scout" || b.id === "filer" || b.id === "watch" ? `\nTHE PLAN\n${planText()}\n` : ""}`;
+}
+function routine(){
+  return `# routines.yml · Newmoon
+# Watch re-checks on each new moon. If your Grok Bot's routine editor only takes
+# simple schedules, set it to monthly and paste the steps.
+routine: newmoon-recheck
+skill: newmoon
+schedule:
+  timezone: local
+  at: "09:00"
+  dates:
+${MOONS.slice(0,12).map(d => `    - ${isoDay(d)}   # new moon`).join("\n")}
+steps:
+  - bot: watch
+    do: re-search every site marked REMOVED or NOT LISTED
+  - bot: filer
+    do: draft opt-outs for anything that came back
+    approval: required
+  - bot: clerk
+    do: confirm pending emails
+    approval: required
+  - bot: ledger
+    do: send the updated sheet and the next check date
+notify: one message when done`;
+}
+const TABS = [
+  {id:"main", t:"main prompt", d:"For Grok Bot. One prompt, whole crew. Your details and plan are inside.", get: mainPrompt},
+  {id:"scan", t:"quick scan", d:"For Grok chat. The same text the “find me with Grok” button sends.", get: scanPrompt},
+  ...CREW.map(b => ({id:b.id, t:`${b.n} ${b.name.toLowerCase()}`, d:`For a separate ${b.name} bot. ${b.never.replace(/\.$/,"")} is off limits.`, get: () => botPrompt(b)})),
+  {id:"routine", t:"routines.yml", d:"Schedules Watch for the next twelve new moons.", get: routine}
+];
+let tab = "main";
+function hl(text){
+  return esc(text).replace(/^([A-Z][A-Z0-9 ·().\-\/]{2,})$/gm, '<span class="h">$1</span>').replace(/\[ask me[^\]]*\]/g, m => `<span class="v">${m}</span>`);
+}
+function renderKit(){
+  const t = TABS.find(x => x.id === tab);
+  $("#tabs").innerHTML = TABS.map(x => `<button type="button" role="tab" id="tab-${x.id}" aria-selected="${x.id===tab}" aria-controls="k-pre">${x.t}</button>`).join("");
+  $("#kit-desc").textContent = t.d;
+  $("#k-pre").innerHTML = hl(t.get());
+}
+function kitAll(){
+  return `# Newmoon kit\n\nGenerated ${fmtDay(new Date())}. Site list from BADBOOL by Yael Grauer (CC BY-NC-SA 4.0).\n\n` +
+    TABS.map(x => `## ${x.t}\n\n${x.d}\n\n\`\`\`${x.id==="routine"?"yaml":"text"}\n${x.get()}\n\`\`\`\n`).join("\n");
+}
+$("#tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; tab = b.id.slice(4); renderKit(); });
+$("#tabs").addEventListener("keydown", e => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const i = TABS.findIndex(x => x.id === tab), n = (i + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
+  tab = TABS[n].id; renderKit(); $("#tab-"+tab).focus();
+});
+$("#k-copy").addEventListener("click", () => copy(TABS.find(x => x.id === tab).get(), "Prompt copied. Paste it into your Grok Bot."));
+$("#k-all").addEventListener("click", () => saveOrCopy("newmoon-kit.md","text/markdown",kitAll(),"Kit"));
+$("#hero-copy").addEventListener("click", () => copy(mainPrompt(), "Main prompt copied. Paste it into your Grok Bot."));
+
+/* ---------- crew ---------- */
+$("#crew-list").innerHTML = CREW.map(b => `<div class="crew-row"><span class="no">${b.n}</span><div><h3>${b.name} <small>--${b.tag}</small></h3><div class="when">runs: ${b.when}</div></div><p class="job">${b.job}</p><p class="never">${b.never}</p></div>`).join("");
+
+/* ---------- directory ---------- */
+const FILTERS = [["all","All"],["t1","Crucial"],["t2","High priority"],["callerid","Caller-ID apps"],["nm","Added by Newmoon"],["auto","Bots can finish"],["you","Needs you"]];
+let dq = "", df = "all";
+$("#d-filters").innerHTML = FILTERS.map(([v,l]) => `<button type="button" data-f="${v}" aria-pressed="${v===df}">${l}</button>`).join("");
+const needsYou = s => s.flags.some(f => FLAG[f][1]);
+function renderDir(){
+  const q = dq.toLowerCase();
+  const rows = SITES.filter(s => {
+    if (df === "t1" && s.tier !== 1) return false;
+    if (df === "t2" && s.tier !== 2) return false;
+    if (df === "you" && !needsYou(s)) return false;
+    if (df === "auto" && needsYou(s)) return false;
+    if (df === "callerid" && s.cat !== "callerid") return false;
+    if (df === "nm" && s.src !== "nm") return false;
+    return !q || (s.name + " " + s.covers + " " + host(s.out)).toLowerCase().includes(q);
+  });
+  $("#d-count").textContent = `${rows.length} of ${SITES.length}`;
+  $("#dir").innerHTML = rows.length ? rows.map(s => `<div class="dir-row"><span class="tier t${s.tier}">${["","crucial","high","more",s.cat==="callerid"?"caller id":s.cat==="marketing"?"marketing":"added"][s.tier]}</span>
+    <div class="nm"><b>${esc(s.name)}</b><span class="cov">${esc(host(s.out))}${s.covers ? ` · also ${esc(s.covers)}` : ""}</span><span class="src ${s.src}">${s.src === "nm" ? "Newmoon · check link" : "BADBOOL"}</span></div>
+    <div class="nt">${esc(s.note)}${flagsHtml(s.flags)}</div>
+    <span class="links">${s.find !== s.out ? `<a href="${esc(s.find)}" target="_blank" rel="noopener noreferrer">find ↗</a>` : ""}<a class="out" href="${esc(s.out)}" target="_blank" rel="noopener noreferrer">opt out ↗</a></span></div>`).join("")
+    : `<p class="dir-empty">No site matches “${esc(dq)}”. Try the company name without .com.</p>`;
+}
+$("#d-q").addEventListener("input", e => { dq = e.target.value.trim(); renderDir(); });
+$("#d-filters").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; df = b.dataset.f;
+  for (const x of $("#d-filters").children) x.setAttribute("aria-pressed", String(x === b)); renderDir();
+});
+
+/* ---------- the run (replay) ---------- */
+const tiles = $("#t-tiles");
+tiles.innerHTML = CREW.map(b => `<div class="tile" id="tl-${b.id}"><span class="nm"><small>${b.n}</small>${b.tag}</span><span class="bar" id="tb-${b.id}">${"<i></i>".repeat(8)}</span><p>${b.line[0]}<br><b>${b.line[1]}</b></p><span class="n" id="tn-${b.id}">0</span></div>`).join("");
+const NEXT = fmtShort(MOONS[0]);
+const EVENTS = [
+  {bot:"scout", ab:"SPK", t:"Spokeo", s:"phone, age, relatives", c:"lit", l:"listed", found:1},
+  {bot:"scout", ab:"WP", t:"Whitepages", s:"phone + home address", c:"lit", l:"listed", found:1},
+  {bot:"filer", ab:"SPK", t:"Spokeo opt-out", s:"profile URL + email", c:"warn", l:"waits for yes", draft:{file:"draft_1.md", meta:"— filer / spokeo", to:"to: Spokeo / opt-out form", say:"Remove the listing for (512) •••-••41. Email only, no ID. Submit?"}, then:{c:"info", l:"filed", filed:1}},
+  {bot:"scout", ab:"BV", t:"BeenVerified", s:"phone + 2 old addresses", c:"lit", l:"listed", found:1},
+  {bot:"clerk", ab:"@", t:"Spokeo confirmation", s:"link in your inbox", c:"ok", l:"confirmed"},
+  {bot:"scout", ab:"FPS", t:"FastPeopleSearch", s:"searched 3 ways", c:"dim", l:"not listed"},
+  {bot:"filer", ab:"WP", t:"Whitepages opt-out", s:"verification call to you", c:"warn", l:"needs you"},
+  {bot:"registry", ab:"DNC", t:"donotcall.gov", s:"your number, free", c:"ok", l:"registered"},
+  {bot:"filer", ab:"BV", t:"BeenVerified opt-out", s:"people + property search", c:"warn", l:"waits for yes", draft:{file:"draft_2.md", meta:"— filer / beenverified", to:"to: BeenVerified / opt-out", say:"Opt out (512) •••-••41 and 2 past addresses. Confirm by email. Submit?"}, then:{c:"info", l:"filed", filed:1}},
+  {bot:"scout", ab:"INT", t:"Intelius", s:"phone only", c:"lit", l:"listed", found:1},
+  {bot:"filer", ab:"INT", t:"Intelius opt-out", s:"covers the PeopleConnect sites", c:"warn", l:"waits for yes", draft:{file:"draft_3.md", meta:"— filer / intelius", to:"to: PeopleConnect suppression", say:"One request for Intelius and its sister sites. Email only. Submit?"}, then:{c:"info", l:"filed", filed:1}},
+  {bot:"watch", ab:"NM", t:"Recheck", s:"new moon · " + NEXT, c:"info", l:"scheduled"},
+  {bot:"ledger", ab:"LDG", t:"Ledger", s:"6 rows, 6 proofs", c:"ok", l:"sent", end:true}
+];
+const R = {found:0, filed:0, per:{}, clock:21*3600+2*60+40, approvals:0, rows:[]};
+const hms = s => [Math.floor(s/3600)%24, Math.floor(s/60)%60, s%60].map(v => String(v).padStart(2,"0")).join(":");
+function rFeed(){
+  $("#t-feed").innerHTML = R.rows.slice(0,5).map(r => `<li><time>${r.time}</time><span class="ab">${r.ab}</span><span class="tt"><b>${esc(r.t)}</b><span>${esc(r.s)}</span></span><span class="by">← ${CREW.find(b=>b.id===r.bot).n} ${r.bot}</span><span class="chip ${r.c}">${r.l}</span></li>`).join("");
+}
+function rCounts(){
+  $("#t-found").textContent = R.found; $("#t-filed").textContent = R.filed;
+  for (const b of CREW){
+    const n = R.per[b.id] || 0; $("#tn-"+b.id).textContent = n;
+    [...$("#tb-"+b.id).children].forEach((x,i) => x.classList.toggle("f", i < Math.min(8, n*2)));
+  }
+  $("#d-dots").innerHTML = `${[0,1,2].map(i => `<i class="${i < R.approvals ? "f" : ""}"></i>`).join("")} ${R.approvals}/3<span>&nbsp;approved by you</span>`;
+}
+function rDraft(d){
+  $("#d-file").textContent = d.file; $("#d-meta").textContent = d.meta; $("#d-to").textContent = d.to; $("#d-to").hidden = false;
+  $("#d-say").className = "say"; $("#d-say").innerHTML = ""; $("#d-sub").hidden = true;
+  $("#d-st").textContent = "unsent"; $("#d-st").className = "st";
+  $("#d-ap").innerHTML = `<b>❯</b> approve? [y/N]`;
+}
+function rSummary(){
+  $("#d-file").textContent = "ledger.md"; $("#d-meta").textContent = "— run complete"; $("#d-st").textContent = "exit 0"; $("#d-st").className = "st ok";
+  $("#d-to").hidden = true;
+  $("#d-say").className = "say big"; $("#d-say").textContent = "3 filed. 1 needs you.";
+  $("#d-sub").hidden = false; $("#d-sub").textContent = "// next check: new moon · " + NEXT;
+  $("#d-ap").innerHTML = `<span style="color:var(--dim)">--scout --filer --clerk --registry --watch --ledger</span>`;
+}
+function rApply(ev, instant){
+  R.clock += 22 + (ev.t.length*7)%40;
+  const row = {time:hms(R.clock), ab:ev.ab, t:ev.t, s:ev.s, bot:ev.bot, c:ev.c, l:ev.l};
+  R.rows.unshift(row); R.per[ev.bot] = (R.per[ev.bot]||0) + 1; R.found += ev.found || 0;
+  for (const b of CREW) $("#tl-"+b.id).classList.toggle("on", b.id === ev.bot && !instant);
+  return row;
+}
+function rReset(){
+  R.found = 0; R.filed = 0; R.per = {}; R.clock = 21*3600+2*60+40; R.approvals = 0; R.rows = [];
+  rDraft(EVENTS[2].draft); $("#d-say").innerHTML = `<span class="q">“</span>`; rFeed(); rCounts();
+}
+let paused = false, visible = true;
+const sleep = ms => new Promise(res => { let left = ms; const iv = setInterval(() => { if (!paused && visible) left -= 100; if (left <= 0){ clearInterval(iv); res(); } }, 100); });
+async function type(text){
+  const el = $("#d-say"); el.innerHTML = `<span class="q">“</span>`;
+  const span = document.createElement("span"); el.appendChild(span);
+  for (let i = 1; i <= text.length; i++){ span.textContent = text.slice(0,i); await sleep(30); }
+  el.insertAdjacentHTML("beforeend", `<span class="q">”</span>`);
+}
+async function run(skip){
+  for (;;){
+    if (!skip){ rReset(); await sleep(900); }
+    for (const ev of EVENTS.slice(skip || 0)){
+      const row = rApply(ev);
+      if (ev.draft){ rDraft(ev.draft); rFeed(); rCounts(); await type(ev.draft.say); await sleep(900);
+        $("#d-ap").innerHTML = `<b>❯</b> approve? [y/N] <span class="y">y ✓ submitted</span>`; $("#d-st").textContent = "sent"; $("#d-st").className = "st ok";
+        R.approvals++; Object.assign(row, ev.then); R.filed += ev.then.filed || 0; rFeed(); rCounts(); await sleep(1500);
+      } else { rFeed(); rCounts(); if (ev.end) rSummary(); await sleep(ev.end ? 5200 : 1500); }
+    }
+    skip = 0;
+  }
+}
+function runStatic(){
+  rReset();
+  for (const ev of EVENTS){ const row = rApply(ev, true); if (ev.then){ Object.assign(row, ev.then); R.filed += ev.then.filed || 0; R.approvals++; } }
+  rFeed(); rCounts(); rSummary();
+}
+const tog = $("#t-toggle");
+if (reduce){ runStatic(); tog.textContent = "▶ play replay"; tog.addEventListener("click", () => { tog.hidden = true; run(); }, {once:true}); }
+else {
+  // show a populated panel at rest, then start the loop
+  rReset(); for (const ev of EVENTS.slice(0,2)) rApply(ev, true); R.found = 2; rFeed(); rCounts();
+  setTimeout(() => run(2), 1200);
+  tog.addEventListener("click", () => { paused = !paused; tog.textContent = paused ? "▶ play" : "❚❚ pause"; tog.setAttribute("aria-pressed", String(paused)); });
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe($("#term"));
+}
+
+/* ---------- the orbit: every site as a satellite, Grok's beam sweeping them ---------- */
+const Orbit = (() => {
+  const cv = $("#moon"), x = cv.getContext("2d"), Z = cv.width, C = Z/2;
+  const mc = document.createElement("canvas"); mc.width = mc.height = Math.round(Z*.6);
+  const MOON_R = mc.width*.36;
+  const RINGS = [{r:Z*.29, w:.045}, {r:Z*.365, w:-.03}, {r:Z*.44, w:.02}];
+  const nodes = SITES.map((s, i) => ({s, i, ring: s.tier <= 2 ? 0 : s.tier === 3 ? 1 : 2, ev:-9, a:0, px:0, py:0}));
+  RINGS.forEach((R, ri) => { const ns = nodes.filter(n => n.ring === ri); ns.forEach((n, j) => { n.a0 = j/ns.length*Math.PI*2 + ri*.41; }); });
+  const tip = $("#orb-tip"), line = $("#orb-line"), wrap = $("#orb");
+  const TAU = Math.PI*2, start = performance.now();
+  const COLOR = {todo:"#efe9dc", listed:"#efe9dc", needsyou:"#e9b45b", filed:"#a3b6ff", confirmed:"#a3b6ff", removed:"#273144", notlisted:"#273144", skip:"#1b2331", ghost:"#1b2331"};
+  const PHRASE = {todo:"opt-out queued", listed:"listed, opt-out queued", needsyou:"needs you", filed:"filed, waiting on email", confirmed:"confirmed", removed:"removed \u2713", notlisted:"not listed \u2713", skip:"skipped"};
+  let k = 1, drawnK = -1, last = {}, buildAt = -9, sendAt = -9, hover = null, visible = true, raf = 0, lastLine = "", hideT;
+  const seg = (t, a, b) => Math.max(0, Math.min(1, (t - a)/(b - a)));
+  const out3 = v => 1 - Math.pow(1 - v, 3);
+  const maxTier = () => (DEPTHS.find(d => d.id === S.depth) || DEPTHS[1]).max;
+  const stat = n => n.s.tier <= maxTier() ? st(n.s.id) : "ghost";
+  function moonLayer(){ if (Math.abs(k - drawnK) > .001){ drawMoon(mc, k, true); drawnK = k; } }
+  function frame(now){
+    const t = reduce ? 99 : (now - start)/1000;
+    x.clearRect(0,0,Z,Z);
+    // rings
+    x.lineWidth = 1.5;
+    RINGS.forEach((R, ri) => { x.strokeStyle = ri === 2 ? "rgba(163,182,255,.10)" : "rgba(151,161,181,.12)"; x.setLineDash(ri === 2 ? [4, 10] : []); x.beginPath(); x.arc(C, C, R.r, 0, TAU); x.stroke(); });
+    x.setLineDash([]);
+    // Grok's beam
+    const sweep = reduce ? -1 : (t*TAU/6.5) % TAU;
+    const be = t - buildAt, bp = be >= 0 && be < 1.3 ? out3(be/1.3) : -1;
+    const beams = [];
+    if (sweep >= 0) beams.push([sweep, .14]);
+    if (bp >= 0) beams.push([(buildAt*TAU/6.5 + bp*TAU) % TAU, .26*(1 - seg(be, 1, 1.3))]);
+    for (const [ang, al] of beams){
+      if (typeof x.createConicGradient === "function"){
+        const g = x.createConicGradient(ang - 1, C, C);
+        g.addColorStop(0, "rgba(163,182,255,0)"); g.addColorStop(1/TAU, `rgba(163,182,255,${al})`); g.addColorStop(1/TAU + .001, "rgba(163,182,255,0)");
+        x.fillStyle = g; x.beginPath(); x.arc(C, C, RINGS[2].r + 24, 0, TAU); x.arc(C, C, MOON_R*.98, 0, TAU, true); x.fill("evenodd");
+      }
+      x.strokeStyle = `rgba(163,182,255,${al*3})`; x.lineWidth = 2; x.beginPath();
+      x.moveTo(C + Math.cos(ang)*MOON_R, C + Math.sin(ang)*MOON_R); x.lineTo(C + Math.cos(ang)*(RINGS[2].r + 24), C + Math.sin(ang)*(RINGS[2].r + 24)); x.stroke();
+    }
+    // node positions
+    let swept = null, sweptD = 9;
+    for (const n of nodes){
+      const R = RINGS[n.ring], ip = reduce ? 1 : out3(seg(t, .1 + n.i*.011, .95 + n.i*.011));
+      n.a = (n.a0 + R.w*t) % TAU; const r = R.r*(1.45 - .45*ip);
+      n.px = C + Math.cos(n.a)*r; n.py = C + Math.sin(n.a)*r; n.ip = ip;
+      let pulse = 0;
+      for (const [ang] of beams){ const d = ((ang - n.a) % TAU + TAU) % TAU; if (d < 1.3) pulse = Math.max(pulse, Math.exp(-d*3.2)); }
+      n.pulse = pulse;
+      if (sweep >= 0 && stat(n) !== "ghost"){ const d = ((sweep - n.a) % TAU + TAU) % TAU; if (d < sweptD){ sweptD = d; swept = n; } }
+    }
+    // plan lines: Grok pulls every site into one plan, and again when you send it
+    const se = t - sendAt;
+    const lineA = Math.max(be >= 0 ? seg(be, .5, .8)*(1 - seg(be, 1.3, 2)) : 0, se >= 0 ? seg(se, 0, .15)*(1 - seg(se, .6, 1.2)) : 0);
+    if (lineA > 0){
+      x.lineWidth = 1.2;
+      for (const n of nodes){ const s = stat(n); if (s === "ghost" || s === "skip") continue;
+        const dx = Math.cos(n.a), dy = Math.sin(n.a);
+        x.strokeStyle = `rgba(239,233,220,${.22*lineA})`; x.beginPath(); x.moveTo(n.px, n.py); x.lineTo(C + dx*MOON_R*1.02, C + dy*MOON_R*1.02); x.stroke(); }
+    }
+    // moon
+    moonLayer(); x.drawImage(mc, C - mc.width/2, C - mc.height/2);
+    // transmit rings when the scan is sent to Grok
+    if (se >= 0 && se < 1.6){ for (const off of [0, .3]){ const q = seg(se, off, off + 1.1); if (q <= 0 || q >= 1) continue;
+      x.strokeStyle = `rgba(163,182,255,${.6*(1 - q)})`; x.lineWidth = 3; x.beginPath(); x.arc(C, C, MOON_R + q*(RINGS[2].r - MOON_R + 40), 0, TAU); x.stroke(); } }
+    // nodes
+    x.textBaseline = "middle"; x.font = `500 21px "JetBrains Mono", monospace`;
+    for (const n of nodes){
+      const s = stat(n), col = COLOR[s], lit = s === "todo" || s === "listed" || s === "needsyou";
+      const r = (n.s.tier === 1 ? 9 : n.s.cat === "callerid" ? 8 : 6.5) * (1 + n.pulse*.6) * (hover === n ? 1.5 : 1);
+      x.globalAlpha = n.ip;
+      if (lit){ x.shadowColor = col; x.shadowBlur = 14 + n.pulse*30; }
+      x.fillStyle = s === "removed" || s === "notlisted" ? "#07090e" : col;
+      x.beginPath(); x.arc(n.px, n.py, r, 0, TAU); x.fill(); x.shadowBlur = 0;
+      if (s === "removed" || s === "notlisted" || s === "ghost"){ x.strokeStyle = s === "ghost" ? "#1b2331" : "#3a4660"; x.lineWidth = 2; x.stroke(); }
+      if (s === "filed" || s === "confirmed"){ x.fillStyle = "#07090e"; x.beginPath(); x.arc(n.px, n.py, r, -Math.PI/2, Math.PI/2); x.fill(); x.fillStyle = col; }
+      // status change burst
+      const ev = t - n.ev;
+      if (ev >= 0 && ev < .9){ const q = ev/.9; x.strokeStyle = s === "removed" || s === "notlisted" ? "#62d3a2" : col; x.globalAlpha = n.ip*(1 - q); x.lineWidth = 3; x.beginPath(); x.arc(n.px, n.py, r + q*46, 0, TAU); x.stroke(); }
+      if (n.pulse > .02 && s !== "ghost"){ x.globalAlpha = n.ip*n.pulse*.7; x.strokeStyle = "#a3b6ff"; x.lineWidth = 2; x.beginPath(); x.arc(n.px, n.py, r + 6 + (1 - n.pulse)*18, 0, TAU); x.stroke(); }
+      // name tag as the beam passes
+      const la = s === "ghost" ? 0 : Math.min(1, n.pulse*1.6 - .25);
+      if (la > 0 || hover === n){
+        const out = n.ring === 2 ? -1 : 1, dx = Math.cos(n.a), lx = n.px + dx*22*out, ly = n.py + Math.sin(n.a)*22*out;
+        x.globalAlpha = n.ip*(hover === n ? 1 : la); x.fillStyle = "#e6eaf2";
+        x.textAlign = (dx*out) >= 0 ? "left" : "right"; x.fillText(n.s.name, lx, ly);
+      }
+      x.globalAlpha = 1;
+    }
+    // what the beam is on right now
+    if (swept && swept.pulse > .5){
+      const {regs, phone, sites} = planItems(), total = regs.length + phone.length + sites.length;
+      const idx = phone.length + regs.length + sites.findIndex(s => s.id === swept.s.id) + 1;
+      const html = `<b>grok \u276f</b> ${String(idx).padStart(2,"0")}/${total} <i>${esc(swept.s.name)}</i> \u2192 ${PHRASE[stat(swept)]}`;
+      if (html !== lastLine){ line.innerHTML = html; lastLine = html; }
+    }
+    if (!reduce && visible && !document.hidden) raf = requestAnimationFrame(frame); else raf = 0;
+  }
+  function kick(){ if (!raf) raf = requestAnimationFrame(frame); }
+  if (reduce) line.innerHTML = `<b>grok \u276f</b> ${SITES.length} sites in orbit. Tap one to see it.`;
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) kick(); }).observe(cv);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+  // hover / tap a satellite
+  function pick(e){
+    const b = cv.getBoundingClientRect(), mx = (e.clientX - b.left)/b.width*Z, my = (e.clientY - b.top)/b.height*Z;
+    let best = null, bd = 34;
+    for (const n of nodes){ const d = Math.hypot(n.px - mx, n.py - my); if (d < bd){ bd = d; best = n; } }
+    return best;
+  }
+  function show(n){
+    hover = n; clearTimeout(hideT);
+    if (!n){ hideT = setTimeout(() => { tip.hidden = true; hover = null; kick(); }, 260); return; }
+    const s = stat(n), b = cv.getBoundingClientRect(), wb = wrap.getBoundingClientRect();
+    const lab = s === "ghost" ? "not in this plan" : (STATUS.find(v => v[0] === s) || ["", s])[1];
+    tip.innerHTML = `<b>${esc(n.s.name)}</b><span class="s" style="color:${s === "removed" || s === "notlisted" ? "var(--ok)" : s === "ghost" ? "var(--dim)" : COLOR[s]}">${esc(lab)}</span><br>${esc(host(n.s.out))}<br><a href="${esc(n.s.out)}" target="_blank" rel="noopener noreferrer">opt out \u2197</a>`;
+    const lx = n.px/Z*b.width + (b.left - wb.left), ly = n.py/Z*b.height + (b.top - wb.top);
+    tip.style.left = Math.max(100, Math.min(wb.width - 100, lx)) + "px"; tip.style.top = ly + "px"; tip.hidden = false;
+    if (reduce) frame(0); else kick();
+  }
+  cv.addEventListener("pointermove", e => { if (e.pointerType === "mouse"){ const n = pick(e); if (n !== hover) show(n); } });
+  cv.addEventListener("pointerdown", e => show(pick(e)));
+  tip.addEventListener("pointerenter", () => clearTimeout(hideT));
+  wrap.addEventListener("pointerleave", () => show(null));
+  let buildT;
+  return {
+    setK(v){ k = v; if (reduce) frame(0); else kick(); },
+    sync(){
+      const t = (performance.now() - start)/1000;
+      for (const n of nodes){ const s = stat(n); if (last[n.s.id] && last[n.s.id] !== s) n.ev = t; last[n.s.id] = s; }
+      if (reduce) frame(0); else kick();
+    },
+    build(delay = 650){ if (reduce) return; clearTimeout(buildT); buildT = setTimeout(() => { buildAt = (performance.now() - start)/1000; kick(); }, delay); },
+    send(){ if (reduce) return; sendAt = (performance.now() - start)/1000; kick(); }
+  };
+})();
+
+/* ---------- boot ---------- */
+$("#foot-moon").textContent = "Upcoming new moons: " + MOONS.slice(0,4).map(fmtShort).join(" · ") + ".";
+$("#h-sites").textContent = SITES.length + " sites"; $("#f-sites").textContent = SITES.length;
+$("#w-count").textContent = `${SITES.length} sites + registries, in priority order`;
+renderForm(); renderDir(); renderKit();
+if (!reduce){ shownK = 1; Orbit.setK(1); drawMoon($("#moon-sm"),1,false); }
+renderPlan();
+window.NM = {kitAll, mainPrompt, scanPrompt, routine, botPrompt: id => botPrompt(CREW.find(b => b.id === id)), SITES, REG, CREW, csv, ics};
+})();
+</script>

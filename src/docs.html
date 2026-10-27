@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Newmoon Docs</title>
+<meta name="description" content="How Newmoon works: the Grok quick scan, setting up the six-bot crew in Grok Bot, commands, statuses, site flags, rechecks and self-hosting.">
+<meta name="theme-color" content="#07090e">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a reference manual for the same night terminal. Sticky index on the left, one reading column, mono for everything you type. */
+:root{
+  color-scheme: dark;
+  --bg:#07090e; --panel:#0b1018; --raise:#111827; --line:#1b2331; --line-2:#273144;
+  --text:#e6eaf2; --mute:#97a1b5; --dim:#5d687d; --moon:#efe9dc; --accent:#a3b6ff; --ok:#62d3a2; --warn:#e9b45b; --bad:#ef8a8a;
+  --f-body:"Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+::selection{background:var(--accent);color:var(--bg)}
+[hidden]{display:none!important}
+.pad{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:18px;height:60px}
+.mark{display:flex;align-items:center;gap:10px;color:var(--text);font:600 19px/1 var(--f-body);letter-spacing:-.03em}
+.mark:hover{text-decoration:none}
+.crumb{font:500 12.5px/1 var(--f-mono);color:var(--dim)}
+.crumb b{color:var(--text);font-weight:500}
+.top .sp{flex:1}
+.top .back{font:500 12.5px/1 var(--f-mono);color:var(--mute)}
+.btn{font:500 13px/1 var(--f-mono);display:inline-flex;align-items:center;gap:8px;padding:10px 13px;border-radius:7px;border:1px solid var(--line-2);background:transparent;color:var(--text);cursor:pointer}
+.btn:hover{border-color:var(--mute);text-decoration:none}
+.btn.primary{background:var(--moon);border-color:var(--moon);color:var(--bg)}
+.btn.primary .sig{color:#4f63b8}
+
+.layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px}
+aside{position:sticky;top:61px;align-self:start;height:calc(100vh - 61px);overflow:auto;padding:28px 0 40px;border-right:1px solid var(--line);scrollbar-width:thin}
+.search{position:relative;margin:0 20px 22px 0}
+.search input{width:100%;font:14px/1 var(--f-body);color:var(--text);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:10px 34px 10px 12px}
+.search input:focus{outline:none;border-color:var(--accent)}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:11px/1 var(--f-mono);color:var(--dim);border:1px solid var(--line-2);border-radius:4px;padding:3px 6px}
+nav.toc{display:grid;gap:22px;padding-right:20px}
+.toc h4{margin:0 0 8px;font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.toc ul{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc a{display:block;color:var(--mute);font-size:14.5px;padding:5px 10px;border-radius:6px;border-left:2px solid transparent}
+.toc a:hover{color:var(--text);text-decoration:none;background:var(--panel)}
+.toc a.on{color:var(--text);background:var(--panel);border-left-color:var(--accent)}
+.toc .none{font:12.5px var(--f-mono);color:var(--dim);padding:5px 10px}
+.mtoc{display:none}
+
+main{min-width:0;padding:40px 0 120px;max-width:760px}
+.hero{padding-bottom:36px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font:12.5px/1 var(--f-mono);color:var(--dim)}
+.eyebrow b{color:var(--accent);font-weight:500}
+h1{font:600 clamp(40px,6vw,64px)/1 var(--f-body);letter-spacing:-.04em;margin:18px 0 18px;text-wrap:balance}
+h1 span{color:var(--dim)}
+.lede{color:var(--mute);font-size:18px;max-width:60ch;margin:0}
+.ver{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font:12.5px/1.4 var(--f-mono);color:var(--dim)}
+.ver b{color:var(--text);font-weight:500}
+section.doc{padding-top:48px}
+h2{font:600 30px/1.15 var(--f-body);letter-spacing:-.025em;margin:0 0 14px;display:flex;align-items:baseline;gap:12px;text-wrap:balance}
+h2 .no{font:500 13px/1 var(--f-mono);color:var(--dim);letter-spacing:0}
+h2 a.anchor{opacity:0;font:500 16px var(--f-mono);color:var(--dim)}
+h2:hover a.anchor{opacity:1}
+h3{font:600 19px/1.3 var(--f-body);letter-spacing:-.01em;margin:30px 0 8px}
+p{margin:0 0 14px;color:var(--mute)}
+p strong,li strong{color:var(--text);font-weight:500}
+ul.list,ol.list{margin:0 0 16px;padding-left:20px;color:var(--mute)}
+ul.list li,ol.list li{margin:4px 0}
+code{font:13.5px var(--f-mono);color:var(--text);background:var(--raise);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.code{position:relative;margin:4px 0 20px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);overflow:hidden}
+.code header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 8px 8px 14px;border-bottom:1px solid var(--line);font:12px/1 var(--f-mono);color:var(--dim)}
+.code header button{font:500 12px/1 var(--f-mono);color:var(--mute);background:none;border:1px solid var(--line-2);border-radius:6px;padding:7px 9px;cursor:pointer}
+.code header button:hover{color:var(--text);border-color:var(--mute)}
+.code pre{margin:0;padding:14px 16px;overflow-x:auto;font:13px/1.7 var(--f-mono);color:var(--mute)}
+.code pre .c{color:var(--dim)}
+.code pre .k{color:var(--accent)}
+.code pre .s{color:var(--ok)}
+.code pre .y{color:var(--text)}
+.note{margin:4px 0 20px;padding:14px 16px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel);color:var(--mute);font-size:15px}
+.note b.l{display:inline-block;font:500 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-right:8px;vertical-align:1px}
+.note.warn b.l{color:var(--warn)}
+.note.stop b.l{color:var(--bad)}
+.tbl{margin:4px 0 22px;overflow-x:auto;border:1px solid var(--line-2);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+th{font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:left;padding:12px 14px;border-bottom:1px solid var(--line-2);background:var(--panel)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--mute);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:first-child{color:var(--text)}
+td.n{font-variant-numeric:tabular-nums;text-align:right;font-family:var(--f-mono)}
+td code{white-space:nowrap}
+.chip{font:500 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line-2);border-radius:5px;padding:6px 8px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:1.5px;background:currentColor}
+.c-lit{color:var(--moon)}.c-info{color:var(--accent)}.c-ok{color:var(--ok)}.c-warn{color:var(--warn)}.c-dim{color:var(--dim)}
+.flag{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line-2);border-radius:4px;padding:3px 5px;white-space:nowrap}
+.flag.you{color:var(--warn);border-color:color-mix(in srgb, var(--warn) 40%, transparent)}
+.flag.chk{color:var(--ok);border-color:color-mix(in srgb, var(--ok) 40%, transparent)}
+.steps{counter-reset:s;list-style:none;margin:6px 0 22px 13px;padding:0;display:grid;gap:0;border-left:1px solid var(--line-2)}
+.steps li{counter-increment:s;position:relative;padding:0 0 22px 28px;color:var(--mute)}
+.steps li::before{content:counter(s);position:absolute;left:-13px;top:0;width:26px;height:26px;border-radius:50%;background:var(--bg);border:1px solid var(--line-2);display:grid;place-items:center;font:500 12px/1 var(--f-mono);color:var(--accent)}
+.steps li b{display:block;color:var(--text);font-weight:500;margin-bottom:2px}
+.steps li:last-child{padding-bottom:4px}
+.diagram{margin:8px 0 24px;border:1px solid var(--line-2);border-radius:12px;background:var(--panel);padding:18px;overflow-x:auto}
+.diagram svg{display:block;min-width:620px;width:100%;height:auto}
+.diagram text{font-family:var(--f-mono)}
+.crew{display:grid;gap:0;margin:6px 0 22px;border-top:1px solid var(--line)}
+.crew details{border-bottom:1px solid var(--line)}
+.crew summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:40px 110px minmax(0,1fr) 20px;gap:12px;align-items:baseline;padding:15px 0}
+.crew summary::-webkit-details-marker{display:none}
+.crew summary .n{font:500 12.5px/1 var(--f-mono);color:var(--dim)}
+.crew summary b{font-weight:600;font-size:17px}
+.crew summary span{color:var(--mute);font-size:15px}
+.crew summary::after{content:"+";font:400 20px/1 var(--f-mono);color:var(--dim)}
+.crew details[open] summary::after{content:"−"}
+.crew dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 16px;margin:0 0 18px 52px;font-size:14.5px}
+.crew dt{font:500 11px/1.9 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.crew dd{margin:0;color:var(--mute)}
+.crew dd.never{color:var(--bad)}
+.moons{display:flex;flex-wrap:wrap;gap:8px 10px;margin:6px 0 22px}
+.moons span{font:12.5px/1 var(--f-mono);color:var(--mute);border:1px solid var(--line-2);border-radius:999px;padding:8px 11px;font-variant-numeric:tabular-nums}
+.moons span.next{color:var(--bg);background:var(--moon);border-color:var(--moon)}
+.kbd{font:12px var(--f-mono);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text)}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:56px}
+.pager a{border:1px solid var(--line-2);border-radius:10px;padding:16px;color:var(--text);display:grid;gap:4px}
+.pager a:hover{border-color:var(--mute);text-decoration:none}
+.pager small{font:12px var(--f-mono);color:var(--dim)}
+.pager a:last-child{text-align:right}
+footer{border-top:1px solid var(--line);margin-top:64px;padding-top:24px;font:12.5px/1.7 var(--f-mono);color:var(--dim)}
+footer a{color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--moon);color:var(--bg);font:500 13px/1 var(--f-mono);padding:12px 16px;border-radius:8px;transition:.2s;pointer-events:none;z-index:40}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+mark{background:color-mix(in srgb, var(--accent) 30%, transparent);color:var(--text);border-radius:3px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:0}
+  aside{display:none}
+  .mtoc{display:block;position:sticky;top:61px;z-index:15;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px}
+  .mtoc select{width:100%;font:14px var(--f-body);color:var(--text);background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px}
+  html{scroll-padding-top:130px}
+  .crumb{display:none}
+  .crew summary{grid-template-columns:32px 90px minmax(0,1fr) 16px}
+  .crew dl{margin-left:0;grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .crew summary span{display:none}
+  .crew summary{grid-template-columns:32px minmax(0,1fr) 16px}
+  .pager{grid-template-columns:1fr}
+  .top .back{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in pad">
+    <a class="mark" href="./"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9.25" fill="#07090e" stroke="#efe9dc" stroke-width="1.5"/><path d="M11 1.75a9.25 9.25 0 0 0 0 18.5a6 9.25 0 0 1 0-18.5z" fill="#efe9dc" opacity=".18"/></svg>newmoon</a>
+    <span class="crumb">/ <b>docs</b></span>
+    <span class="sp"></span>
+    <a class="back" href="./">← back to the app</a>
+    <a class="btn primary" href="./#plan"><span class="sig">$</span> build my plan</a>
+  </div>
+</header>
+
+<div class="mtoc pad"><label class="sr" for="mtoc" hidden>Jump to section</label><select id="mtoc" aria-label="Jump to section"></select></div>
+
+<div class="layout pad">
+  <aside>
+    <div class="search"><input type="search" id="q" placeholder="Search the docs" aria-label="Search the docs"><kbd>/</kbd></div>
+    <nav class="toc" id="toc" aria-label="Documentation"></nav>
+  </aside>
+
+  <main id="main">
+    <div class="hero">
+      <div class="eyebrow"><b>//</b> documentation · v1.0</div>
+      <h1>How Newmoon works<span>.</span></h1>
+      <p class="lede">Newmoon writes a removal plan for your phone number and home address, and Grok carries it out in your own account. This page covers the quick scan, the six-bot crew in Grok Bot, every command and status, and how to host your own copy.</p>
+      <div class="ver"><span>sites <b>73</b></span><span>bots <b>6</b></span><span>list updated <b>Sep 27, 2026</b></span><span>next recheck <b id="v-next">—</b></span></div>
+    </div>
+
+    <section class="doc" id="quickstart" data-group="Start">
+      <h2><span class="no">01</span>Quickstart<a class="anchor" href="#quickstart">#</a></h2>
+      <p>Three steps. The first takes a minute and works with any Grok account. The rest needs Grok Bot.</p>
+      <ol class="steps">
+        <li><b>Scan</b>Type your first name, last name, city and state on the home page and press <strong>find me with Grok</strong>. Grok opens with a search prompt for 15 of the biggest people-search sites and comes back with where you're listed.</li>
+        <li><b>Plan</b>Scroll to the planner, add the phone number and the inbox you want to use for opt-outs, and pick a depth. The site list and the prompt update as you type.</li>
+        <li><b>Run</b>Copy the main prompt into a Grok Bot skill called <code>newmoon</code>, add the routine, and say <code>start</code>. Scout reports first. Nothing is filed until you approve it.</li>
+      </ol>
+      <div class="note"><b class="l">note</b>Use a spare inbox for opt-outs if you have one. Every confirmation email lands there, and Clerk only reads mail from sites in your plan.</div>
+    </section>
+
+    <section class="doc" id="how" data-group="Start">
+      <h2><span class="no">02</span>How it works<a class="anchor" href="#how">#</a></h2>
+      <p>Newmoon is one static page. It has no server, no account and no analytics. It builds text: a plan and a set of prompts. Grok does the searching, filling and clicking, inside your account, after you approve each step.</p>
+      <div class="diagram" role="img" aria-label="Your details stay in the browser and go into a prompt. You paste the prompt into Grok or Grok Bot. Grok works on the people-search sites and reports back to you. Newmoon has no server in this loop.">
+        <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5d687d"/></marker></defs>
+          <rect x="10" y="40" width="190" height="110" rx="10" fill="#111827" stroke="#273144"/>
+          <text x="28" y="70" fill="#5d687d" font-size="11" letter-spacing="1.5">YOUR BROWSER</text>
+          <text x="28" y="98" fill="#e6eaf2" font-size="15">newmoon page</text>
+          <text x="28" y="122" fill="#97a1b5" font-size="12">plan + progress</text>
+          <text x="28" y="138" fill="#97a1b5" font-size="12">in localStorage</text>
+          <rect x="285" y="40" width="190" height="110" rx="10" fill="#111827" stroke="#a3b6ff"/>
+          <text x="303" y="70" fill="#a3b6ff" font-size="11" letter-spacing="1.5">YOUR GROK ACCOUNT</text>
+          <text x="303" y="98" fill="#e6eaf2" font-size="15">Grok · Grok Bot</text>
+          <text x="303" y="122" fill="#97a1b5" font-size="12">scan, file, confirm,</text>
+          <text x="303" y="138" fill="#97a1b5" font-size="12">recheck</text>
+          <rect x="560" y="40" width="190" height="110" rx="10" fill="#111827" stroke="#273144"/>
+          <text x="578" y="70" fill="#5d687d" font-size="11" letter-spacing="1.5">THE SITES</text>
+          <text x="578" y="98" fill="#e6eaf2" font-size="15">73 opt-out pages</text>
+          <text x="578" y="122" fill="#97a1b5" font-size="12">forms, emails,</text>
+          <text x="578" y="138" fill="#97a1b5" font-size="12">registries</text>
+          <line x1="204" y1="82" x2="280" y2="82" stroke="#5d687d" stroke-width="1.5" marker-end="url(#ar)"/>
+          <text x="214" y="72" fill="#97a1b5" font-size="11">prompt</text>
+          <line x1="479" y1="82" x2="555" y2="82" stroke="#5d687d" stroke-width="1.5" marker-end="url(#ar)"/>
+          <text x="487" y="72" fill="#97a1b5" font-size="11">after yes</text>
+          <path d="M380 154 C380 205, 105 205, 105 156" fill="none" stroke="#62d3a2" stroke-width="1.5" stroke-dasharray="4 5" marker-end="url(#ar)"/>
+          <text x="170" y="222" fill="#62d3a2" font-size="11">ledger: one sheet back to you, every line with proof</text>
+          <rect x="285" y="0" width="190" height="26" rx="6" fill="none" stroke="#273144" stroke-dasharray="3 4"/>
+          <text x="380" y="17" fill="#5d687d" font-size="11" text-anchor="middle">newmoon server: none</text>
+        </svg>
+      </div>
+      <p>Two consequences follow. Newmoon can't see your data, so there's nothing to leak or subpoena. And Newmoon can't look anyone up by itself: every search runs in the Grok account of the person asking, under rules that limit it to that person.</p>
+    </section>
+
+    <section class="doc" id="scan" data-group="Use it">
+      <h2><span class="no">03</span>Grok quick scan<a class="anchor" href="#scan">#</a></h2>
+      <p>The <strong>find me with Grok</strong> button opens <code>grok.com/?q=</code> with your name and city in the prompt, and copies the same prompt to your clipboard. If the Grok box opens empty, paste.</p>
+      <div class="code"><header><span>quick scan prompt (shortened)</span><button type="button" data-copy="scan">copy</button></header><pre id="scan-pre"><span class="y">I'm Jordan Avery from Austin, TX.</span> I want to see where my phone number and
+home address are exposed online so I can remove them.
+
+Search these people-search sites for my name and city: Whitepages, Spokeo,
+BeenVerified, FastPeopleSearch, TruePeopleSearch, Intelius, MyLife, Nuwber, …
+
+For each site give me: listed / not listed / unsure, what it shows,
+and the official opt-out link. <span class="k">Don't open paid reports. Only look for me.</span></pre></div>
+      <p>The scan is a starting point. Grok searches the open web, so a site that hides results behind a captcha can show up as <em>unsure</em>. The Grok Bot crew checks each site directly.</p>
+    </section>
+
+    <section class="doc" id="setup" data-group="Use it">
+      <h2><span class="no">04</span>Set up Grok Bot<a class="anchor" href="#setup">#</a></h2>
+      <ol class="steps">
+        <li><b>Create the skill</b>In Grok Bot, create a skill named <code>newmoon</code>. If someone shared a Newmoon bot link, add it in one click and skip to step 3.</li>
+        <li><b>Paste the main prompt</b>Copy it from the <a href="./#kit">kit</a> on the home page. It already contains your details, the rules, the crew and your plan in priority order.</li>
+        <li><b>Add the routine</b>Paste <code>routines.yml</code> so Watch runs on each new moon. If the routine editor only takes simple schedules, choose monthly and paste the steps.</li>
+        <li><b>Say start</b>Registry handles Do Not Call first, then Scout searches the first five sites and stops to show you what it found.</li>
+      </ol>
+      <h3>One bot or six</h3>
+      <p>The main prompt runs the whole crew in one bot, which is the simplest setup. If you'd rather watch each job separately, create six bots and give each its own prompt from the kit tabs. They share the same rules and hand work to each other by status.</p>
+      <h3>Approving a draft</h3>
+      <p>Before anything is sent, Filer shows you a draft like this. Your number is masked so only the last two digits show.</p>
+      <div class="code"><header><span>draft_2.md · filer / spokeo</span></header><pre><span class="c">to: Spokeo / opt-out form · spokeo.com/optout</span>
+<span class="y">profile URL</span>   spokeo.com/Jordan-Avery/Texas/Austin/p1234…
+<span class="y">email</span>         optouts@…
+<span class="c">no ID · no card · nothing the listing doesn't already show</span>
+
+<span class="k">❯ approve? [y/N]</span> <span class="s">y</span></pre></div>
+    </section>
+
+    <section class="doc" id="commands" data-group="Use it">
+      <h2><span class="no">05</span>Commands<a class="anchor" href="#commands">#</a></h2>
+      <p>The main prompt teaches your bot these phrases. Type them in the Grok Bot chat. Plain sentences work too; these are shortcuts.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>You say</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td><code>start</code></td><td>Registry runs, then Scout searches the first five sites and reports.</td></tr>
+          <tr><td><code>status</code></td><td>One line per bot: what it's doing and what's waiting on you.</td></tr>
+          <tr><td><code>what needs me</code></td><td>Every NEEDS YOU item, with the exact link and the step you have to do.</td></tr>
+          <tr><td><code>yes</code> / <code>no</code></td><td>Approve or reject the draft on screen.</td></tr>
+          <tr><td><code>yes to all Spokeo</code></td><td>Approve every draft for one site. <code>yes to all</code> alone approves the current batch.</td></tr>
+          <tr><td><code>skip MyLife</code></td><td>Marks the site SKIPPED and moves on.</td></tr>
+          <tr><td><code>ledger</code></td><td>Sends the full table now instead of at the end of the run.</td></tr>
+          <tr><td><code>watch now</code></td><td>Runs the recheck today instead of waiting for the new moon.</td></tr>
+          <tr><td><code>pause</code> / <code>resume</code></td><td>Stops every bot, or carries on from where it stopped.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="crew" data-group="Reference">
+      <h2><span class="no">06</span>The crew<a class="anchor" href="#crew">#</a></h2>
+      <p>Each bot has one job, a fixed hand-off and one rule it can't break. Open a row for details.</p>
+      <div class="crew" id="crew-list"></div>
+    </section>
+
+    <section class="doc" id="statuses" data-group="Reference">
+      <h2><span class="no">07</span>Statuses<a class="anchor" href="#statuses">#</a></h2>
+      <p>Ledger and the tracker use the same words. The moon on the home page is lit by whatever is still open, so each status also has a weight.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Status</th><th>Meaning</th><th style="text-align:right">Moon</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip c-dim">to do</span></td><td>Not searched yet.</td><td class="n">100%</td></tr>
+          <tr><td><span class="chip c-lit">listed</span></td><td>Scout found you. Waiting for Filer.</td><td class="n">100%</td></tr>
+          <tr><td><span class="chip c-warn">needs you</span></td><td>A call, an ID, a card or a captcha. Your bot tells you exactly what to do.</td><td class="n">100%</td></tr>
+          <tr><td><span class="chip c-info">filed</span></td><td>Opt-out submitted. Waiting for the confirmation email or the site.</td><td class="n">55%</td></tr>
+          <tr><td><span class="chip c-info">confirmed</span></td><td>Confirmation link clicked. The site hasn't caught up yet.</td><td class="n">25%</td></tr>
+          <tr><td><span class="chip c-ok">removed</span></td><td>A fresh search comes up empty, with a screenshot as proof.</td><td class="n">0%</td></tr>
+          <tr><td><span class="chip c-ok">not listed</span></td><td>Searched three ways, nothing found.</td><td class="n">0%</td></tr>
+          <tr><td><span class="chip c-dim">skip</span></td><td>You chose to leave it. It doesn't count either way.</td><td class="n">—</td></tr>
+        </tbody>
+      </table></div>
+      <p>Watch can move a removed site to <strong>RETRY</strong> when the listing comes back. Filer then drafts a new opt-out for your approval.</p>
+    </section>
+
+    <section class="doc" id="depth" data-group="Reference">
+      <h2><span class="no">08</span>Depth and sites<a class="anchor" href="#depth">#</a></h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Depth</th><th>What's in it</th><th style="text-align:right">Sites</th></tr></thead>
+        <tbody>
+          <tr><td>Crucial</td><td>The sites BADBOOL marks crucial: BeenVerified, Spokeo, Whitepages, Intelius and seven more.</td><td class="n">11</td></tr>
+          <tr><td>Priority</td><td>Crucial plus high priority: Acxiom, Ancestry, FamilyTreeNow, FastPeopleSearch, USPhoneBook.</td><td class="n">16</td></tr>
+          <tr><td>Full BADBOOL</td><td>Every people-search site on BADBOOL.</td><td class="n">45</td></tr>
+          <tr><td>Max</td><td>Plus 28 Newmoon additions: caller-ID apps (Truecaller, Sync.me, NumLookup, Spytox), the Dataveria network, ClustrMaps, PeekYou, Pipl, LexisNexis, Epsilon and others.</td><td class="n">73</td></tr>
+        </tbody>
+      </table></div>
+      <p>Every depth also includes the registries (Do Not Call, Google "Results about you", OptOutPrescreen, and California's DROP portal for CA residents) and two phone settings you do yourself.</p>
+      <div class="note"><b class="l">note</b>Intelius' PeopleConnect opt-out also covers Instant Checkmate, TruthFinder, Classmates, AnyWho, ZabaSearch, US Search, PeopleFinder and Addresses.com. One request, many sites.</div>
+    </section>
+
+    <section class="doc" id="flags" data-group="Reference">
+      <h2><span class="no">09</span>Site flags<a class="anchor" href="#flags">#</a></h2>
+      <p>Flags on each site tell you and the bots what an opt-out will need. Amber flags need a human.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Flag</th><th>Meaning</th><th>Who handles it</th></tr></thead>
+        <tbody>
+          <tr><td><span class="flag">email link</span></td><td>The site sends a confirmation email.</td><td>Clerk, after your yes</td></tr>
+          <tr><td><span class="flag">listing url</span></td><td>The form wants the URL of your profile page.</td><td>Scout saves it, Filer pastes it</td></tr>
+          <tr><td><span class="flag">captcha</span></td><td>Expect a captcha on the form.</td><td>Your bot if its tools allow, otherwise you</td></tr>
+          <tr><td><span class="flag">free account</span></td><td>You need a free account (never a trial).</td><td>You decide</td></tr>
+          <tr><td><span class="flag">birthdate</span></td><td>The form asks for a date of birth.</td><td>Filer asks you first</td></tr>
+          <tr><td><span class="flag you">phone call</span></td><td>An automated call reads you a code.</td><td>You</td></tr>
+          <tr><td><span class="flag you">photo id</span></td><td>The site wants an ID or a face photo.</td><td>You, or skip it</td></tr>
+          <tr><td><span class="flag you">card</span></td><td>Searching needs a card or a trial.</td><td>You, or skip it</td></tr>
+          <tr><td><span class="flag chk">check link</span></td><td>Added by Newmoon. The bot opens the link first and finds the site's own opt-out if it moved.</td><td>Scout</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="rechecks" data-group="Reference">
+      <h2><span class="no">10</span>Rechecks<a class="anchor" href="#rechecks">#</a></h2>
+      <p>Data brokers buy fresh records all the time, and a removed listing can come back within weeks. Watch searches every cleared site again on each new moon, roughly every 29.5 days.</p>
+      <div class="moons" id="moons"></div>
+      <p>Dates are computed in your browser with the lunar phase formulas from Jean Meeus' <em>Astronomical Algorithms</em> (chapter 49), accurate to a couple of minutes, and shown in your time zone. The <strong>recheck dates .ics</strong> button in the planner puts the next twelve in your calendar.</p>
+    </section>
+
+    <section class="doc" id="data" data-group="Reference">
+      <h2><span class="no">11</span>Your data<a class="anchor" href="#data">#</a></h2>
+      <p>The planner saves to <code>localStorage</code> under the key <code>newmoon.v1</code>, in this browser only. Clear site data and it's gone. To move to another device, use <strong>backup .json</strong> and <strong>restore</strong>.</p>
+      <div class="code"><header><span>newmoon-backup.json</span></header><pre>{
+  <span class="k">"v"</span>: 1,
+  <span class="k">"example"</span>: false,
+  <span class="k">"me"</span>: { "first": "Jordan", "last": "Avery", "city": "Austin", "state": "TX",
+          "aka": "", "phone": "", "email": "" },
+  <span class="k">"depth"</span>: "priority",
+  <span class="k">"status"</span>: { "spokeo": { "s": "removed", "t": "2026-10-27" } }
+}</pre></div>
+      <p><strong>ledger .csv</strong> exports columns <code>#, site, status, updated, opt-out link, notes</code>, which open straight in Sheets or Excel.</p>
+    </section>
+
+    <section class="doc" id="safety" data-group="Trust">
+      <h2><span class="no">12</span>Privacy and safety<a class="anchor" href="#safety">#</a></h2>
+      <p>The rules below are written into every prompt. Your bot follows them on every site, every run.</p>
+      <ul class="list">
+        <li><strong>Only you.</strong> The bots act for the person in ABOUT ME and ask before touching a relative's listing.</li>
+        <li><strong>Nothing without a yes.</strong> No form, email or confirmation link goes out until you approve it in chat.</li>
+        <li><strong>No ID, no card, no SSN.</strong> Sites that want one are marked NEEDS YOU and left for you.</li>
+        <li><strong>Nothing new.</strong> A site only gets details its listing already shows.</li>
+        <li><strong>Masked in chat.</strong> Your number shows as (XXX) •••-••41 in drafts.</li>
+        <li><strong>Proof or it didn't happen.</strong> Removed means a fresh empty search with a screenshot.</li>
+      </ul>
+      <div class="note stop"><b class="l">don't</b>Use Newmoon to look up someone else. The prompts refuse it, and it's the opposite of what this is for. If you're helping a parent or partner, do it with them, in their name and with their inbox.</div>
+      <div class="note warn"><b class="l">at risk?</b>If you're dealing with stalking or domestic violence, many states run an address confidentiality program that gives you a substitute address. Search "address confidentiality program" with your state's name. Some brokers also remove records faster with a police report or court order.</div>
+    </section>
+
+    <section class="doc" id="trouble" data-group="Trust">
+      <h2><span class="no">13</span>Troubleshooting<a class="anchor" href="#trouble">#</a></h2>
+      <h3>Grok opened with an empty box</h3>
+      <p>The prompt is already on your clipboard. Paste it and send. Some Grok versions don't prefill from links.</p>
+      <h3>An opt-out link is dead</h3>
+      <p>Sites move these pages often. Your bot looks for the site's own "opt out" or "Do Not Sell" link in the footer, shows it to you and notes the new link in the ledger.</p>
+      <h3>The confirmation email never came</h3>
+      <p>Check the spam folder of the opt-out inbox. After 48 hours Clerk flags it and Filer retries once.</p>
+      <h3>A site wants my driver's license</h3>
+      <p>Your bot won't upload it. You can skip the site, or do it yourself with everything but your name and photo covered.</p>
+      <h3>A listing came back</h3>
+      <p>That's normal. Watch catches it on the next new moon, marks it RETRY and Filer drafts a new opt-out. Say <code>watch now</code> to check sooner.</p>
+      <h3>I'm still getting spam calls</h3>
+      <p>Do Not Call only binds legitimate telemarketers, and lists that already have your number keep it for a while. Turn on spam filtering on your phone (in the planner under "Your phone") and give removals a few weeks.</p>
+    </section>
+
+    <section class="doc" id="hosting" data-group="Build">
+      <h2><span class="no">14</span>Self-hosting<a class="anchor" href="#hosting">#</a></h2>
+      <p>Newmoon is a folder of static files. Any static host works.</p>
+      <div class="code"><header><span>project</span></header><pre><span class="y">site/</span>          index.html · docs.html · favicon.svg · og.png  <span class="c"># deploy this</span>
+<span class="y">kit/</span>           main prompt, six bot prompts, routines.yml, brokers.json
+<span class="y">src/</span>           page.html · docs.html  <span class="c"># edit these</span>
+<span class="y">motion/</span>        launch video and its renderer
+<span class="y">build.py</span>       src → site</pre></div>
+      <div class="code"><header><span>deploy</span><button type="button" data-copy="deploy">copy</button></header><pre id="deploy-pre"><span class="c"># rebuild with your domain so link previews point at it</span>
+python3 build.py https://yourdomain.com
+
+<span class="c"># Netlify: drag site/ onto app.netlify.com/drop, or</span>
+npx vercel deploy site --prod</pre></div>
+      <h3>Settings</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Constant</th><th>In</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>GROK_BOT_SHARE</code></td><td><code>src/page.html</code></td><td>Your x.ai share link for the Newmoon bot. When set, the home page shows "add Newmoon to my Grok Bot".</td></tr>
+          <tr><td><code>SITE_URL</code></td><td><code>src/page.html</code></td><td>Used in prompts and share posts. On your own domain it picks up the real address automatically.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc" id="sources" data-group="Build">
+      <h2><span class="no">15</span>Sources and license<a class="anchor" href="#sources">#</a></h2>
+      <p>45 sites come from <a href="https://github.com/yaelwrites/Big-Ass-Data-Broker-Opt-Out-List" target="_blank" rel="noopener">BADBOOL</a>, the Big Ass Data Broker Opt-Out List by Yael Grauer, updated September 27, 2026 and licensed <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>. Newmoon restructures it for bots and shares its directory and prompts under the same license: keep the credit, keep it non-commercial, share changes alike.</p>
+      <p>The 28 sites marked Newmoon are Newmoon's own additions and carry the <span class="flag chk">check link</span> flag. Radaris and Rehold aren't listed because both are offline under a court order.</p>
+      <p>Newmoon is an independent project powered by Grok. It isn't made, affiliated with or endorsed by xAI.</p>
+    </section>
+
+    <section class="doc" id="changelog" data-group="Build">
+      <h2><span class="no">16</span>Changelog<a class="anchor" href="#changelog">#</a></h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Version</th><th>Changes</th></tr></thead>
+        <tbody>
+          <tr><td><code>1.0</code> · Oct 27, 2026</td><td>First release. Grok quick scan, six-bot crew for Grok Bot, 73 sites (45 BADBOOL + 28 Newmoon), new-moon rechecks, planner with CSV, ICS and JSON export, the orbit view, commands in the main prompt.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <nav class="pager" aria-label="More">
+      <a href="./#plan"><small>← back to the app</small>Build my plan</a>
+      <a href="./#kit"><small>ready to go</small>Copy the prompts →</a>
+    </nav>
+
+    <footer>
+      Newmoon by <a href="https://x.com/lunarresearcher" target="_blank" rel="noopener">@lunarresearcher</a> · independent, powered by Grok, not affiliated with xAI · site list CC BY-NC-SA 4.0 from BADBOOL by Yael Grauer
+    </footer>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+
+/* crew reference */
+const CREW = [
+  ["01","Scout","Finds your listings.","Your name, city, phone and address; the plan.","Each site searched three ways: name + city, phone, address. Saves the listing URL and a screenshot. Opens “check link” entries first.","LISTED, NOT LISTED or UNSURE per site, with proof.","Filer, for every LISTED site.","Searches for anyone but you."],
+  ["02","Filer","Files the opt-outs.","LISTED sites with their URLs.","Fills each site's own opt-out form with only what the listing shows. Drafts first, masked.","FILED, or NEEDS YOU when a site wants a call, ID, card or an unsolvable captcha.","Clerk, when the site sends an email.","Submits without your yes."],
+  ["03","Clerk","Confirms by email.","The opt-out inbox; FILED sites.","Opens mail from plan domains and donotcall.gov only. Shows sender, subject and the link, clicks after your yes, screenshots the result.","CONFIRMED with proof. Flags anything missing after 48 hours.","Ledger.","Opens any other email."],
+  ["04","Registry","Handles the registries.","Your phone and state.","National Do Not Call Registry (confirm within 72 hours), Google “Results about you” if you're signed in, OptOutPrescreen, California DROP for CA.","REMOVED per registry, with the confirmation.","Ledger.","Hands over an SSN, ID or card number."],
+  ["05","Watch","Rechecks every new moon.","Sites marked REMOVED or NOT LISTED.","Searches them again the way Scout does, on each new moon or when you say watch now.","RETRY with the new URL, or one line saying nothing came back.","Filer, for anything that returned.","Re-files without asking you first."],
+  ["06","Ledger","Keeps the receipts.","Every status change.","One table: site, status, listing URL, filed, confirmed, proof, next check.","The table as one message after each run, plus a summary line.","You.","Marks a site removed without proof."]
+];
+$("#crew-list").innerHTML = CREW.map(([n,name,line,inp,does,out,to,never], i) => `<details${i===0?" open":""}><summary><span class="n">${n}</span><b>${name}</b><span>${line}</span></summary>
+  <dl><dt>Takes</dt><dd>${inp}</dd><dt>Does</dt><dd>${does}</dd><dt>Returns</dt><dd>${out}</dd><dt>Hands to</dt><dd>${to}</dd><dt>Never</dt><dd class="never">${never}</dd></dl></details>`).join("");
+
+/* new moons (Meeus ch. 49) */
+function newMoons(from, n){
+  const rad = Math.PI/180, out = [], s = Math.sin;
+  let k = Math.floor((from.getUTCFullYear() + from.getUTCMonth()/12 - 2000) * 12.3685) - 1;
+  while (out.length < n){
+    const T = k/1236.85, T2 = T*T, T3 = T2*T, T4 = T3*T;
+    let jde = 2451550.09766 + 29.530588861*k + 0.00015437*T2 - 0.00000015*T3 + 0.00000000073*T4;
+    const E = 1 - 0.002516*T - 0.0000074*T2;
+    const M = (2.5534 + 29.1053567*k - 0.0000014*T2 - 0.00000011*T3)*rad;
+    const Mp = (201.5643 + 385.81693528*k + 0.0107582*T2 + 0.00001238*T3 - 0.000000058*T4)*rad;
+    const F = (160.7108 + 390.67050284*k - 0.0016118*T2 - 0.00000227*T3 + 0.000000011*T4)*rad;
+    const O = (124.7746 - 1.56375588*k + 0.0020672*T2 + 0.00000215*T3)*rad;
+    jde += -0.4072*s(Mp) + 0.17241*E*s(M) + 0.01608*s(2*Mp) + 0.01039*s(2*F) + 0.00739*E*s(Mp-M) - 0.00514*E*s(Mp+M)
+      + 0.00208*E*E*s(2*M) - 0.00111*s(Mp-2*F) - 0.00057*s(Mp+2*F) + 0.00056*E*s(2*Mp+M) - 0.00042*s(3*Mp) + 0.00042*E*s(M+2*F)
+      + 0.00038*E*s(M-2*F) - 0.00024*E*s(2*Mp-M) - 0.00017*s(O) - 0.00007*s(Mp+2*M) + 0.00004*s(2*Mp-2*F) + 0.00004*s(3*M)
+      + 0.00003*s(Mp+M-2*F) + 0.00003*s(2*Mp+2*F) - 0.00003*s(Mp+M+2*F) + 0.00003*s(Mp-M+2*F) - 0.00002*s(Mp-M-2*F) - 0.00002*s(3*Mp+M) + 0.00002*s(4*Mp);
+    const d = new Date((jde - 2440587.5)*864e5 - 69e3);
+    if (d > from) out.push(d);
+    k++;
+  }
+  return out;
+}
+const moons = newMoons(new Date(), 12);
+const fmt = d => d.toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"});
+$("#v-next").textContent = fmt(moons[0]);
+$("#moons").innerHTML = moons.map((d, i) => `<span class="${i===0?"next":""}">${fmt(d)}</span>`).join("");
+
+/* copy buttons */
+const toastEl = $("#toast"); let tt;
+const toast = m => { toastEl.textContent = m; toastEl.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => toastEl.classList.remove("show"), 2000); };
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  const text = $("#" + b.dataset.copy + "-pre").innerText;
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch(_){ const r = document.createRange(); r.selectNodeContents($("#" + b.dataset.copy + "-pre")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Selected. Press Ctrl+C or ⌘C to copy."); }
+});
+
+/* table of contents, search, scrollspy */
+const secs = $$("section.doc");
+const groups = [...new Set(secs.map(s => s.dataset.group))];
+const label = s => s.querySelector("h2").childNodes[1].textContent.trim();
+function renderToc(q = ""){
+  const ql = q.toLowerCase();
+  const html = groups.map(g => {
+    const items = secs.filter(s => s.dataset.group === g && (!ql || s.textContent.toLowerCase().includes(ql)));
+    if (!items.length) return "";
+    return `<div><h4>${g}</h4><ul>${items.map(s => `<li><a href="#${s.id}" data-id="${s.id}">${label(s)}</a></li>`).join("")}</ul></div>`;
+  }).join("");
+  $("#toc").innerHTML = html || `<p class="none">Nothing matches “${q.replace(/[<>&"]/g,"")}”.</p>`;
+  spy();
+}
+$("#mtoc").innerHTML = groups.map(g => `<optgroup label="${g}">${secs.filter(s => s.dataset.group === g).map(s => `<option value="${s.id}">${label(s)}</option>`).join("")}</optgroup>`).join("");
+$("#mtoc").addEventListener("change", e => { location.hash = e.target.value; });
+$("#q").addEventListener("input", e => renderToc(e.target.value.trim()));
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter"){ const a = $("#toc a"); if (a){ a.click(); e.target.blur(); } } if (e.key === "Escape"){ e.target.value = ""; renderToc(); e.target.blur(); } });
+document.addEventListener("keydown", e => { if (e.key === "/" && document.activeElement.tagName !== "INPUT"){ e.preventDefault(); $("#q").focus(); } });
+function spy(){
+  let cur = secs[0];
+  for (const s of secs) if (s.getBoundingClientRect().top < 140) cur = s;
+  $$("#toc a").forEach(a => a.classList.toggle("on", a.dataset.id === cur.id));
+  if ($("#mtoc").value !== cur.id) $("#mtoc").value = cur.id;
+}
+addEventListener("scroll", () => requestAnimationFrame(spy), {passive:true});
+renderToc();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600&display=swap">
+<style>html,body{margin:0;background:#07090e}canvas{display:block}</style></head><body>
+<canvas id="c" width="1024" height="1024"></canvas>
+<script src="_moon.js"></script>
+<script>
+const cv = document.getElementById("c"), x = cv.getContext("2d"), S = 1024, C = S/2, TAU = Math.PI*2;
+const BG = "#07090e", MOON = "#efe9dc", ACC = "#a3b6ff";
+function bg(){ x.fillStyle = BG; x.fillRect(0,0,S,S); const g = x.createRadialGradient(C,C*0.9,0,C,C,S*.7); g.addColorStop(0,"#0f1522"); g.addColorStop(1,BG); x.fillStyle = g; x.fillRect(0,0,S,S); }
+function moonAt(k, size, cx = C, cy = C){ const m = document.createElement("canvas"); m.width = m.height = Math.round(size/0.72); drawMoon(m, k, true); x.drawImage(m, cx - m.width/2, cy - m.height/2); }
+function beam(ang, r0, r1, al){
+  const g = x.createConicGradient(ang - 1.1, C, C);
+  g.addColorStop(0, "rgba(163,182,255,0)"); g.addColorStop(1.1/TAU, `rgba(163,182,255,${al})`); g.addColorStop(1.1/TAU + .001, "rgba(163,182,255,0)");
+  x.fillStyle = g; x.beginPath(); x.arc(C,C,r1,0,TAU); x.arc(C,C,r0,0,TAU,true); x.fill("evenodd");
+  x.strokeStyle = `rgba(163,182,255,${Math.min(1, al*4)})`; x.lineWidth = 6; x.lineCap = "round";
+  x.beginPath(); x.moveTo(C+Math.cos(ang)*r0, C+Math.sin(ang)*r0); x.lineTo(C+Math.cos(ang)*r1, C+Math.sin(ang)*r1); x.stroke();
+}
+function dot(a, r, rad, col, glow){ const px = C+Math.cos(a)*r, py = C+Math.sin(a)*r; if (glow){ x.shadowColor = col; x.shadowBlur = 40; } x.fillStyle = col; x.beginPath(); x.arc(px,py,rad,0,TAU); x.fill(); x.shadowBlur = 0; }
+function ring(r, al, dash){ x.strokeStyle = `rgba(151,161,181,${al})`; x.lineWidth = 7; x.setLineDash(dash || []); x.beginPath(); x.arc(C,C,r,0,TAU); x.stroke(); x.setLineDash([]); }
+
+const designs = {
+  // A: the new moon itself, with Grok's beam sweeping past
+  beam(){ bg(); x.lineWidth = 6; ring(410, .2); beam(-0.85, 290, 480, .26); moonAt(0, 580);
+    x.strokeStyle = "rgba(239,233,220,.75)"; x.lineWidth = 14; x.beginPath(); x.arc(C,C,290,0,TAU); x.stroke();
+    dot(-0.85, 410, 40, MOON, true); dot(1.5, 410, 24, "#3a4660"); dot(2.7, 410, 24, "#3a4660"); },
+  // B: a thin crescent in orbit, one satellite still lit
+  orbit(){ bg(); ring(410, .2); beam(-0.6, 280, 480, .2); moonAt(.2, 540);
+    dot(-0.6, 410, 40, MOON, true); dot(1.1, 410, 24, "#3a4660"); dot(2.4, 410, 24, ACC); dot(3.5, 410, 24, "#3a4660"); },
+  // C: the terminal prompt inside a new moon
+  prompt(){ bg(); x.fillStyle = "#0b1018"; x.beginPath(); x.arc(C,C,330,0,TAU); x.fill();
+    x.strokeStyle = MOON; x.lineWidth = 14; x.beginPath(); x.arc(C,C,330,0,TAU); x.stroke();
+    x.save(); x.beginPath(); x.arc(C,C,323,0,TAU); x.clip(); x.fillStyle = "rgba(239,233,220,.10)"; x.beginPath(); x.ellipse(C-120, C, 330, 330, 0, 0, TAU); x.fill(); x.restore();
+    x.fillStyle = ACC; x.font = '600 300px "JetBrains Mono"'; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("❯", C - 60, C + 10);
+    x.fillStyle = MOON; x.fillRect(C + 50, C + 90, 130, 30); }
+};
+window.draw = async name => { await document.fonts.ready; texture(); designs[name](); return true; };
+</script></body></html>

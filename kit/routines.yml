@@ -1,0 +1,33 @@
+# routines.yml · Newmoon
+# Watch re-checks on each new moon. If your Grok Bot's routine editor only takes
+# simple schedules, set it to monthly and paste the steps.
+routine: newmoon-recheck
+skill: newmoon
+schedule:
+  timezone: local
+  at: "09:00"
+  dates:
+    - 2026-11-09   # new moon
+    - 2026-12-09   # new moon
+    - 2027-01-07   # new moon
+    - 2027-02-06   # new moon
+    - 2027-03-08   # new moon
+    - 2027-04-06   # new moon
+    - 2027-05-06   # new moon
+    - 2027-06-04   # new moon
+    - 2027-07-04   # new moon
+    - 2027-08-02   # new moon
+    - 2027-08-31   # new moon
+    - 2027-09-30   # new moon
+steps:
+  - bot: watch
+    do: re-search every site marked REMOVED or NOT LISTED
+  - bot: filer
+    do: draft opt-outs for anything that came back
+    approval: required
+  - bot: clerk
+    do: confirm pending emails
+    approval: required
+  - bot: ledger
+    do: send the updated sheet and the next check date
+notify: one message when done

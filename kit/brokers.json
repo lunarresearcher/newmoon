@@ -1,0 +1,1057 @@
+{
+  "source": "BADBOOL by Yael Grauer, updated 2026-09-27, CC BY-NC-SA 4.0",
+  "tiers": {
+    "1": "crucial",
+    "2": "high priority",
+    "3": "more"
+  },
+  "registries": [
+    {
+      "id": "dnc",
+      "name": "National Do Not Call Registry",
+      "find": "https://www.donotcall.gov/",
+      "out": "https://www.donotcall.gov/",
+      "flags": [
+        "email"
+      ],
+      "note": "Free, one time. Click the confirmation email within 72 hours.",
+      "covers": ""
+    },
+    {
+      "id": "google",
+      "name": "Google “Results about you”",
+      "find": "https://support.google.com/websearch/answer/12719076",
+      "out": "https://support.google.com/websearch/answer/12719076",
+      "flags": [
+        "account"
+      ],
+      "note": "Ask Google to drop search results that show your phone or address.",
+      "covers": ""
+    },
+    {
+      "id": "drop",
+      "name": "California DROP portal",
+      "find": "http://consumer.drop.privacy.ca.gov",
+      "out": "http://consumer.drop.privacy.ca.gov",
+      "flags": [],
+      "note": "California residents: one request to 500+ registered data brokers.",
+      "covers": "",
+      "ca": true
+    },
+    {
+      "id": "prescreen",
+      "name": "OptOutPrescreen",
+      "find": "https://www.optoutprescreen.com/",
+      "out": "https://www.optoutprescreen.com/",
+      "flags": [],
+      "note": "Stops prescreened credit and insurance offers. The 5-year electronic opt-out is free. Skip any field asking for an SSN.",
+      "covers": ""
+    }
+  ],
+  "sites": [
+    {
+      "id": "beenverified",
+      "name": "BeenVerified",
+      "tier": 1,
+      "find": "https://www.beenverified.com/app/optout/search",
+      "out": "https://www.beenverified.com/app/optout/search",
+      "flags": [
+        "email"
+      ],
+      "note": "Do people search and property search separately (property: beenverified.com/app/optout/address-search). One opt-out per email address.",
+      "covers": "PeopleLooker, PeopleSmart",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "checkpeople",
+      "name": "CheckPeople",
+      "tier": 1,
+      "find": "https://checkpeople.com/privacy-rights",
+      "out": "https://checkpeople.com/opt-out",
+      "flags": [
+        "dob"
+      ],
+      "note": "Send a Right to Know request first to see what they hold. The opt-out asks for birthdate and full legal name.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "clustal",
+      "name": "Clustal",
+      "tier": 1,
+      "find": "https://www.clustal.org",
+      "out": "https://www.clustal.org/privacy-control",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Open “view full record” and use that URL. Each listing needs its own email address.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "intelius",
+      "name": "Intelius",
+      "tier": 1,
+      "find": "https://www.intelius.com/",
+      "out": "https://suppression.peopleconnect.us/login",
+      "flags": [
+        "email"
+      ],
+      "note": "One PeopleConnect request covers the family. Fallback: support@mailer.intelius.com or 1-888-245-1655.",
+      "covers": "Instant Checkmate, TruthFinder, Classmates, AnyWho, ZabaSearch, US Search, PeopleFinder, Addresses.com",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "msv",
+      "name": "Men Stopping Violence",
+      "tier": 1,
+      "find": "https://www.menstoppingviolence.org/people/",
+      "out": "https://www.menstoppingviolence.org/opt-out/",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Paste the URL of your entry, add an email, then confirm from your inbox.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "mylife",
+      "name": "MyLife",
+      "tier": 1,
+      "find": "https://www.mylife.com",
+      "out": "https://www.mylife.com/privacyrequest",
+      "flags": [
+        "phone"
+      ],
+      "note": "Use the privacy request form, or email privacy@mylife.com with your profile link. MyLife pushes for a driver’s license; don’t send one.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "nuwber",
+      "name": "Nuwber",
+      "tier": 1,
+      "find": "https://nuwber.com/",
+      "out": "https://nuwber.com/removal/link",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Filter by state to get the person URL. Skip the “full report” upsell. Fallback: screenshot to support@nuwber.com.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "sbc",
+      "name": "SmartBackgroundChecks",
+      "tier": 1,
+      "find": "https://www.smartbackgroundchecks.com/",
+      "out": "https://www.smartbackgroundchecks.com/optout",
+      "flags": [],
+      "note": "Usually removes you from PeopleFinders too.",
+      "covers": "PeopleFinders",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "spokeo",
+      "name": "Spokeo",
+      "tier": 1,
+      "find": "https://www.spokeo.com/search",
+      "out": "https://www.spokeo.com/optout",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Paste the profile URL in the “opt out your information” section, then confirm by email. Paid accounts may still see removed data.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "thatsthem",
+      "name": "That’s Them",
+      "tier": 1,
+      "find": "https://thatsthem.com/",
+      "out": "https://thatsthem.com/optout",
+      "flags": [],
+      "note": "Skip the Spokeo identity-protection link; it’s a paid product.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "whitepages",
+      "name": "Whitepages",
+      "tier": 1,
+      "find": "https://www.whitepages.com/",
+      "out": "https://www.whitepages.com/suppression_requests",
+      "flags": [
+        "phone"
+      ],
+      "note": "Verification is an automated call with a code. Check Whitepages Premium separately.",
+      "covers": "411.com",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "acxiom",
+      "name": "Acxiom",
+      "tier": 2,
+      "find": "https://www.acxiom.com/optout/",
+      "out": "https://www.acxiom.com/optout/",
+      "flags": [],
+      "note": "You can’t check for free first. US form here; France, Italy and Spain have their own portals.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "ancestry",
+      "name": "Ancestry",
+      "tier": 2,
+      "find": "https://www.ancestry.com/account/",
+      "out": "https://support.ancestry.com/s/reportissue?language=en_US",
+      "flags": [
+        "account"
+      ],
+      "note": "Make a free account (not a trial), collect every record URL with your details, email them to privacy@ancestry.com.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "ftn",
+      "name": "FamilyTreeNow",
+      "tier": 2,
+      "find": "https://www.familytreenow.com/optout",
+      "out": "https://www.familytreenow.com/optout",
+      "flags": [],
+      "note": "Search and remove from the same page.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "fps",
+      "name": "FastPeopleSearch",
+      "tier": 2,
+      "find": "https://www.fastpeoplesearch.com/",
+      "out": "https://www.fastpeoplesearch.com/optout",
+      "flags": [
+        "captcha"
+      ],
+      "note": "Expect a captcha.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "usphonebook",
+      "name": "USPhoneBook",
+      "tier": 2,
+      "find": "https://www.usphonebook.com/",
+      "out": "https://www.usphonebook.com/opt-out/",
+      "flags": [],
+      "note": "Search by your number. If the form hangs, email support+optout@usphonebook.com.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "archives",
+      "name": "Archives",
+      "tier": 3,
+      "find": "https://www.archives.com/",
+      "out": "https://www.archives.com/Optout",
+      "flags": [
+        "pay"
+      ],
+      "note": "Searching needs a free trial with a card. Opt out only if you already know you’re listed.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "classmates",
+      "name": "Classmates",
+      "tier": 3,
+      "find": "https://www.classmates.com/",
+      "out": "https://help.classmates.com/hc/en-us/articles/115002224171-How-can-I-cancel-my-membership-",
+      "flags": [
+        "account"
+      ],
+      "note": "Only matters if you ever made an account. Cancel the membership.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "cbc",
+      "name": "Cyber Background Checks",
+      "tier": 3,
+      "find": "https://www.cyberbackgroundchecks.com/",
+      "out": "https://www.cyberbackgroundchecks.com/removal",
+      "flags": [],
+      "note": "Search, then use the removal page.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "everyjoe",
+      "name": "EveryJoe",
+      "tier": 3,
+      "find": "https://www.everyjoe.com/",
+      "out": "https://www.everyjoe.com/do-not-sell/",
+      "flags": [
+        "url"
+      ],
+      "note": "Copy the link of your entry into the do-not-sell page.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "facecheck",
+      "name": "Facecheck",
+      "tier": 3,
+      "find": "https://facecheck.id",
+      "out": "https://facecheck.id/Face-Search/RemoveMyPhotos",
+      "flags": [
+        "id"
+      ],
+      "note": "Face search engine. Removal needs an ID card or a selfie. Do this one yourself if you want it.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "familysearch",
+      "name": "FamilySearch",
+      "tier": 3,
+      "find": "https://www.familysearch.org/search/",
+      "out": "https://submit-irm.trustarc.com/services/validation/b8d6e704-e5b1-42a0-9f86-bbdec35939a1",
+      "flags": [
+        "account",
+        "url",
+        "email"
+      ],
+      "note": "Free account, copy the record URLs, submit the form, verify your email.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "fpd",
+      "name": "FreePeopleDirectory",
+      "tier": 3,
+      "find": "https://www.freepeopledirectory.com",
+      "out": "https://www.spokeo.com/optout",
+      "flags": [
+        "url"
+      ],
+      "note": "Opt out through Spokeo’s form.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "infotracer",
+      "name": "InfoTracer",
+      "tier": 3,
+      "find": "https://www.infotracer.com",
+      "out": "https://infotracer.com/optout/",
+      "flags": [],
+      "note": "Online form. Mail or fax forms exist as a fallback.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "npd",
+      "name": "National Public Data",
+      "tier": 3,
+      "find": "https://nationalpublicdata.com/search",
+      "out": "https://nationalpublicdata.com/optout.html",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Copy your record’s URL into the form, then verify by email.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "peoplebyname",
+      "name": "PeopleByName",
+      "tier": 3,
+      "find": "https://www.peoplebyname.com/people",
+      "out": "https://www.peoplebyname.com/remove.php",
+      "flags": [],
+      "note": "One request per record. Shortcut: peoplebyname.com/people/Last/First.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "psn",
+      "name": "PeopleSearchNow",
+      "tier": 3,
+      "find": "https://www.peoplesearchnow.com/",
+      "out": "https://www.peoplesearchnow.com/opt-out",
+      "flags": [],
+      "note": "Search, then opt out.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "pimeyes",
+      "name": "PimEyes",
+      "tier": 3,
+      "find": "https://pimeyes.com/",
+      "out": "https://pimeyes.com/en/opt-out-request-form",
+      "flags": [
+        "id"
+      ],
+      "note": "Face search engine. Opt-out needs a face photo and a blurred ID. Do this one yourself if you want it.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "privateeye",
+      "name": "PrivateEye",
+      "tier": 3,
+      "find": "https://www.privateeye.com/",
+      "out": "https://www.privateeye.com/removal",
+      "flags": [
+        "email"
+      ],
+      "note": "They email you a link to a removal form.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "privaterecords",
+      "name": "PrivateRecords",
+      "tier": 3,
+      "find": "https://www.privaterecords.net/name/landing",
+      "out": "https://www.privaterecords.net/api/helper/optOutLight/search",
+      "flags": [],
+      "note": "Search by name and state.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "propertyrecs",
+      "name": "PropertyRecs",
+      "tier": 3,
+      "find": "https://dashboard.propertyrecs.com/opt-out",
+      "out": "https://dashboard.propertyrecs.com/opt-out",
+      "flags": [],
+      "note": "Search and opt out on the same page.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "searchbug",
+      "name": "Searchbug",
+      "tier": 3,
+      "find": "https://www.searchbug.com/",
+      "out": "https://www.searchbug.com/contact-us.aspx",
+      "flags": [
+        "pay"
+      ],
+      "note": "Searching needs a card. You can ask them to block your listing through the contact form or (760) 454-7301.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "spf",
+      "name": "SearchPeopleFree",
+      "tier": 3,
+      "find": "https://www.searchpeoplefree.com/",
+      "out": "https://www.searchpeoplefree.com/opt-out",
+      "flags": [],
+      "note": "Search by name, phone, address and email; each can be a separate listing.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "searchquarry",
+      "name": "SearchQuarry",
+      "tier": 3,
+      "find": "https://www.searchquarry.com/",
+      "out": "https://members.searchquarry.com/removeMyData/",
+      "flags": [
+        "email"
+      ],
+      "note": "Click the verification link to finish.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "socialcatfish",
+      "name": "Social Catfish",
+      "tier": 3,
+      "find": "https://socialcatfish.com",
+      "out": "https://socialcatfish.com/opt-out/",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Note every page URL with your data. Only request removal of what you can already see.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "spyfly",
+      "name": "SpyFly",
+      "tier": 3,
+      "find": "https://www.spyfly.com",
+      "out": "https://www.spyfly.com/help-center/privacy-requests",
+      "flags": [],
+      "note": "Asks for name, age, address and email. Confirm they have you before giving any of it.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "tps",
+      "name": "TruePeopleSearch.com",
+      "tier": 3,
+      "find": "https://www.truepeoplesearch.com/removal",
+      "out": "https://www.truepeoplesearch.com/removal",
+      "flags": [
+        "captcha"
+      ],
+      "note": "Name, city, state and email, then several captchas.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "tpsnet",
+      "name": "TruePeopleSearch.net",
+      "tier": 3,
+      "find": "https://truepeoplesearch.net",
+      "out": "https://docs.google.com/forms/d/e/1FAIpQLSeCPggzv4iXE20iUjcr6vdVWxBOblCyGwDLcO-jZA5j2YF5fQ/viewform",
+      "flags": [
+        "url"
+      ],
+      "note": "Close any extra tabs it opens and skip the “top rated” links.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "unpan",
+      "name": "UN Public Administration Network",
+      "tier": 3,
+      "find": "https://unpan.org/",
+      "out": "https://unpan.org/opt-out",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Search with first and last name only, then confirm from your inbox.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "usphonebook2",
+      "name": "United States Phone Book",
+      "tier": 3,
+      "find": "https://www.unitedstatesphonebook.com/search.php",
+      "out": "https://www.unitedstatesphonebook.com/contact.php",
+      "flags": [],
+      "note": "Enter the phone number and ZIP code exactly as listed.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "unmask",
+      "name": "UnMask",
+      "tier": 3,
+      "find": "https://unmask.com/",
+      "out": "https://unmask.com/opt-out/",
+      "flags": [
+        "email",
+        "captcha"
+      ],
+      "note": "Name, city and state, a couple of captchas, then the email link.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "usaps",
+      "name": "USA People Search",
+      "tier": 3,
+      "find": "https://www.usa-people-search.com/",
+      "out": "https://www.usa-people-search.com/removal",
+      "flags": [],
+      "note": "Search, then use the removal page.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "veripages",
+      "name": "Veripages",
+      "tier": 3,
+      "find": "https://veripages.com/",
+      "out": "https://veripages.com/inner/control-privacy",
+      "flags": [
+        "url",
+        "email",
+        "captcha"
+      ],
+      "note": "Profile URL, name and email, a captcha, then the email link.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "voterrecords",
+      "name": "VoterRecords",
+      "tier": 3,
+      "find": "https://voterrecords.com/",
+      "out": "https://voterrecords.com/",
+      "flags": [
+        "email"
+      ],
+      "note": "Open your record and use “record opt-out” at the bottom. The state voter file itself stays public.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "zoominfo",
+      "name": "ZoomInfo",
+      "tier": 3,
+      "find": "https://privacyrequest.zoominfo.com/remove/verify",
+      "out": "https://privacyrequest.zoominfo.com/remove/verify",
+      "flags": [
+        "email"
+      ],
+      "note": "Mostly work profiles. They email you a code if they hold your address.",
+      "covers": "",
+      "src": "badbool",
+      "cat": "people"
+    },
+    {
+      "id": "peekyou",
+      "name": "PeekYou",
+      "tier": 4,
+      "find": "https://www.peekyou.com/",
+      "out": "https://www.peekyou.com/about/contact/optout/",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Paste your profile URL. They confirm by email.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "pipl",
+      "name": "Pipl",
+      "tier": 4,
+      "find": "https://pipl.com/",
+      "out": "https://pipl.com/personal-information-removal-request",
+      "flags": [
+        "email"
+      ],
+      "note": "Removal request form. Pipl sells mostly to businesses, so a free search may show little.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "peoplefinders",
+      "name": "PeopleFinders",
+      "tier": 4,
+      "find": "https://www.peoplefinders.com/",
+      "out": "https://www.peoplefinders.com/opt-out",
+      "flags": [],
+      "note": "The SmartBackgroundChecks opt-out often clears this too. Check anyway.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "clustrmaps",
+      "name": "ClustrMaps",
+      "tier": 4,
+      "find": "https://clustrmaps.com/",
+      "out": "https://clustrmaps.com/bl/opt-out",
+      "flags": [
+        "url"
+      ],
+      "note": "Search your name and paste your person page URL.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "neighborreport",
+      "name": "Neighbor.report",
+      "tier": 4,
+      "find": "https://neighbor.report/",
+      "out": "https://neighbor.report/remove",
+      "flags": [
+        "url"
+      ],
+      "note": "Listings by street address. Paste your record URL.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "fbc",
+      "name": "FastBackgroundCheck",
+      "tier": 4,
+      "find": "https://www.fastbackgroundcheck.com/",
+      "out": "https://www.fastbackgroundcheck.com/opt-out",
+      "flags": [
+        "captcha"
+      ],
+      "note": "Works like FastPeopleSearch. Expect a captcha.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "idcrawl",
+      "name": "IDCrawl",
+      "tier": 4,
+      "find": "https://www.idcrawl.com/",
+      "out": "https://www.idcrawl.com/opt-out",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Pulls social profiles and phone listings into one page.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "peoplewhiz",
+      "name": "PeopleWhiz",
+      "tier": 4,
+      "find": "https://www.peoplewhiz.com/",
+      "out": "https://www.peoplewhiz.com/optout",
+      "flags": [
+        "email"
+      ],
+      "note": "Opt out by name and state, then the email link.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "cocofinder",
+      "name": "CocoFinder",
+      "tier": 4,
+      "find": "https://cocofinder.com/",
+      "out": "https://cocofinder.com/remove-my-info",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Paste the record URL and confirm by email.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "kiwisearches",
+      "name": "Kiwi Searches",
+      "tier": 4,
+      "find": "https://www.kiwisearches.com/",
+      "out": "https://www.kiwisearches.com/optout",
+      "flags": [],
+      "note": "Opt-out form by name and state.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "persopo",
+      "name": "Persopo",
+      "tier": 4,
+      "find": "https://persopo.com/",
+      "out": "https://persopo.com/opt-out",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Paste the profile URL, then confirm by email.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "officialusa",
+      "name": "OfficialUSA",
+      "tier": 4,
+      "find": "https://www.officialusa.com/",
+      "out": "https://www.officialusa.com/opt-out/",
+      "flags": [
+        "url"
+      ],
+      "note": "Paste your listing URL.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "locatefamily",
+      "name": "LocateFamily",
+      "tier": 4,
+      "find": "https://www.locatefamily.com/",
+      "out": "https://www.locatefamily.com/removal.html",
+      "flags": [
+        "url"
+      ],
+      "note": "Old directory site. The removal form takes your listing ID.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "publicdatausa",
+      "name": "PublicDataUSA",
+      "tier": 4,
+      "find": "https://www.publicdatausa.com/",
+      "out": "https://www.publicdatausa.com/remove.php",
+      "flags": [
+        "url"
+      ],
+      "note": "One request per record.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "usaofficial",
+      "name": "USA-Official",
+      "tier": 4,
+      "find": "https://www.usa-official.com/",
+      "out": "https://www.usa-official.com/remove",
+      "flags": [
+        "url"
+      ],
+      "note": "Paste your record URL.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "publicrecordsnow",
+      "name": "PublicRecordsNow",
+      "tier": 4,
+      "find": "https://www.publicrecordsnow.com/",
+      "out": "https://www.publicrecordsnow.com/static/view/optout",
+      "flags": [],
+      "note": "Opt-out form by name and address.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "dataveria",
+      "name": "Dataveria",
+      "tier": 4,
+      "find": "https://dataveria.com/",
+      "out": "https://dataveria.com/ng/control/privacy",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Same network as Verecor, Virtory and Vericora. Each one needs its own request.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "verecor",
+      "name": "Verecor",
+      "tier": 4,
+      "find": "https://verecor.com/",
+      "out": "https://verecor.com/ng/control/privacy",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Same form as Dataveria.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "virtory",
+      "name": "Virtory",
+      "tier": 4,
+      "find": "https://virtory.com/",
+      "out": "https://virtory.com/ng/control/privacy",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Same form as Dataveria.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "vericora",
+      "name": "Vericora",
+      "tier": 4,
+      "find": "https://vericora.com/",
+      "out": "https://vericora.com/ng/control/privacy",
+      "flags": [
+        "url",
+        "email"
+      ],
+      "note": "Same form as Dataveria.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "neighborwho",
+      "name": "NeighborWho",
+      "tier": 4,
+      "find": "https://www.neighborwho.com/",
+      "out": "https://www.neighborwho.com/app/optout/search",
+      "flags": [
+        "email"
+      ],
+      "note": "BeenVerified's address site. Property listings can need their own opt-out.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "ownerly",
+      "name": "Ownerly",
+      "tier": 4,
+      "find": "https://www.ownerly.com/",
+      "out": "https://www.ownerly.com/app/optout/search",
+      "flags": [
+        "email"
+      ],
+      "note": "BeenVerified's home-owner site. Search your home address.",
+      "covers": "",
+      "src": "nm",
+      "cat": "people"
+    },
+    {
+      "id": "truecaller",
+      "name": "Truecaller",
+      "tier": 4,
+      "find": "https://www.truecaller.com/",
+      "out": "https://www.truecaller.com/unlisting",
+      "flags": [
+        "captcha"
+      ],
+      "note": "Caller-ID app used worldwide. Unlisting removes your number from search. If you use the app, deactivate your account in it first.",
+      "covers": "",
+      "src": "nm",
+      "cat": "callerid"
+    },
+    {
+      "id": "syncme",
+      "name": "Sync.me",
+      "tier": 4,
+      "find": "https://sync.me/",
+      "out": "https://sync.me/optout",
+      "flags": [
+        "captcha"
+      ],
+      "note": "Caller-ID app. Removes your name and number from search.",
+      "covers": "",
+      "src": "nm",
+      "cat": "callerid"
+    },
+    {
+      "id": "numlookup",
+      "name": "NumLookup",
+      "tier": 4,
+      "find": "https://www.numlookup.com/",
+      "out": "https://www.numlookup.com/opt-out",
+      "flags": [],
+      "note": "Free reverse phone lookup. Opt out by number.",
+      "covers": "",
+      "src": "nm",
+      "cat": "callerid"
+    },
+    {
+      "id": "spytox",
+      "name": "Spytox",
+      "tier": 4,
+      "find": "https://www.spytox.com/",
+      "out": "https://www.spytox.com/opt-out",
+      "flags": [
+        "email"
+      ],
+      "note": "Reverse phone and people lookup.",
+      "covers": "",
+      "src": "nm",
+      "cat": "callerid"
+    },
+    {
+      "id": "lexisnexis",
+      "name": "LexisNexis",
+      "tier": 4,
+      "find": "https://consumer.risk.lexisnexis.com/",
+      "out": "https://optout.lexisnexis.com/",
+      "flags": [
+        "id"
+      ],
+      "note": "Feeds background-check and marketing lists. The form can ask for an SSN or license number; bots won't enter either.",
+      "covers": "",
+      "src": "nm",
+      "cat": "marketing"
+    },
+    {
+      "id": "epsilon",
+      "name": "Epsilon",
+      "tier": 4,
+      "find": "https://www.epsilon.com/us/consumer-preference-center",
+      "out": "https://www.epsilon.com/us/consumer-preference-center",
+      "flags": [
+        "email"
+      ],
+      "note": "Marketing data broker. Opt out of data sharing in its consumer preference center.",
+      "covers": "",
+      "src": "nm",
+      "cat": "marketing"
+    }
+  ]
+}
