@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="f" cx="38%" cy="35%" r="75%"><stop offset="0" stop-color="#f7f2e7"/><stop offset=".7" stop-color="#efe9dc"/><stop offset="1" stop-color="#b9b19f"/></radialGradient>
+    <clipPath id="h"><circle cx="32" cy="33" r="21"/></clipPath>
+    <clipPath id="bk"><rect width="64" height="33.5"/></clipPath>
+    <clipPath id="fr"><rect y="33.5" width="64" height="31"/></clipPath>
+  </defs>
+  <ellipse cx="32" cy="34" rx="30" ry="7.5" transform="rotate(-16 32 33)" fill="none" stroke="#a3b6ff" stroke-width="3" clip-path="url(#bk)"/>
+  <circle cx="32" cy="33" r="21" fill="url(#f)"/>
+  <path d="M32 12 A21 21 0 0 1 32 54 A5 21 0 0 0 32 12 Z" fill="#1a2030" opacity=".92" clip-path="url(#h)"/>
+  <rect x="16" y="27" width="32" height="12" rx="6" fill="#0b1018" stroke="#273144" stroke-width="1.5"/>
+  <rect x="23.5" y="29" width="4" height="8" rx="2" fill="#a3b6ff"/>
+  <rect x="35.5" y="29" width="4" height="8" rx="2" fill="#a3b6ff"/>
+  <ellipse cx="32" cy="34" rx="30" ry="7.5" transform="rotate(-16 32 33)" fill="none" stroke="#a3b6ff" stroke-width="3" clip-path="url(#fr)"/>
+</svg>

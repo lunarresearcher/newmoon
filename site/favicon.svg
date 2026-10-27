@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#07090e"/><circle cx="16" cy="16" r="10.5" fill="#07090e" stroke="#efe9dc" stroke-width="2"/><path d="M16 5.5a10.5 10.5 0 0 0 0 21a6.5 10.5 0 0 1 0-21z" fill="#efe9dc" opacity=".22"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="f" cx="38%" cy="35%" r="75%"><stop offset="0" stop-color="#f7f2e7"/><stop offset=".7" stop-color="#efe9dc"/><stop offset="1" stop-color="#b9b19f"/></radialGradient>
+    <clipPath id="h"><circle cx="32" cy="32" r="23"/></clipPath>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#07090e"/>
+  <circle cx="32" cy="32" r="23" fill="url(#f)"/>
+  <path d="M32 9 A23 23 0 0 1 32 55 A6 23 0 0 0 32 9 Z" fill="#1a2030" opacity=".92" clip-path="url(#h)"/>
+  <rect x="14" y="25" width="36" height="14" rx="7" fill="#0b1018"/>
+  <rect x="22" y="27.5" width="5" height="9" rx="2.5" fill="#a3b6ff"/>
+  <rect x="36" y="27.5" width="5" height="9" rx="2.5" fill="#a3b6ff"/>
+</svg>

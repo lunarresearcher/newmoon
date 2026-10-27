@@ -390,7 +390,11 @@ select.status[data-s=skip]{color:var(--dim);text-decoration:line-through}
 .close .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end}
 .close h2{font-size:clamp(40px,7vw,92px);letter-spacing:-.045em;line-height:.95}
 .close h2 span{color:var(--dim)}
-@media (max-width:760px){.close .wrap{grid-template-columns:1fr}}
+.close-side{display:grid;justify-items:center;gap:6px}
+.close .mascot{width:220px;height:auto;max-width:100%;animation:bob 5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion: reduce){.close .mascot{animation:none}}
+@media (max-width:760px){.close .wrap{grid-template-columns:1fr}.close-side{justify-items:start}.close .mascot{width:160px}}
 footer.site{border-top:1px solid var(--line);padding-block:36px 48px;font:12.5px/1.7 var(--f-mono);color:var(--dim)}
 footer.site .wrap{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px 48px}
 footer.site a{color:var(--mute)}
@@ -403,7 +407,7 @@ footer.site p + p{margin-top:10px}
 <header class="top">
   <div class="wrap">
     <a class="mark" href="#top" aria-label="Newmoon, back to top">
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9.25" fill="#07090e" stroke="#efe9dc" stroke-width="1.5"/><path d="M11 1.75a9.25 9.25 0 0 0 0 18.5a6 9.25 0 0 1 0-18.5z" fill="#efe9dc" opacity=".18"/></svg>
+      <img src="logo.svg" width="30" height="30" alt="" style="display:block">
       newmoon
     </a>
     <span class="pw">powered by <b>Grok</b></span>
@@ -675,7 +679,10 @@ footer.site p + p{margin-top:10px}
   <section class="close">
     <div class="wrap">
       <h2>$0.<br><span>Not $129 a year.</span></h2>
-      <div class="cta" style="margin:0"><a class="btn primary" href="#plan"><span class="sig">$</span> build my plan</a></div>
+      <div class="close-side">
+        <img class="mascot" src="newmoon-done.svg" width="220" height="220" alt="NEWMOON, the Newmoon mascot, smiling with green eyes">
+        <a class="btn primary" href="#plan"><span class="sig">$</span> build my plan</a>
+      </div>
     </div>
   </section>
 </main>
@@ -820,7 +827,8 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 const host = u => { try { return new URL(u).hostname.replace(/^www\./,""); } catch(e) { return u; } };
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const framed = (() => { try { return window.self !== window.top; } catch(e) { return true; } })();
-const SITE_URL = (!framed && /^https?:$/.test(location.protocol)) ? location.origin : "https://newmoon.tools";
+// The page's own address, folder included, so it also works at username.github.io/newmoon/
+const SITE_URL = (!framed && /^https?:$/.test(location.protocol)) ? (location.origin + location.pathname.replace(/[^/]*$/, "")).replace(/\/$/, "") : "https://newmoon.tools";
 // After you build the Newmoon bot in your own Grok Bot, paste its x.ai share link here to show the one-click button.
 const GROK_BOT_SHARE = "";
 const toastEl = $("#toast"); let toastT;

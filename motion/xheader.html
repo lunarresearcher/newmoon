@@ -28,6 +28,22 @@ h1 span{color:#5d687d}
   <div id="luno"></div>
 </div>
 <script>
+// Presets: x = X header (left corner kept clear for the avatar), readme = GitHub banner, og = link preview
+const V = new URLSearchParams(location.search).get("v") || "x";
+const PRESET = {
+  x:      {w:1500, h:500, left:400, top:100, h1:112, tag:30, size:480, right:24, mtop:10},
+  readme: {w:1600, h:560, left:96,  top:118, h1:132, tag:32, size:540, right:40, mtop:10},
+  og:     {w:1200, h:630, left:72,  top:150, h1:104, tag:28, size:500, right:-20, mtop:70}
+}[V];
+(() => {
+  const P = PRESET, b = document.getElementById("b"), t = document.querySelector(".txt"), l = document.getElementById("luno"), c = document.getElementById("c");
+  b.style.width = P.w + "px"; b.style.height = P.h + "px";
+  t.style.left = P.left + "px"; t.style.top = P.top + "px";
+  document.querySelector("h1").style.fontSize = P.h1 + "px"; document.querySelector(".tag").style.fontSize = P.tag + "px";
+  Object.assign(l.style, {width: P.size + "px", height: P.size + "px", right: P.right + "px", top: P.mtop + "px"});
+  c.width = P.w*2; c.height = P.h*2; c.style.width = P.w + "px"; c.style.height = P.h + "px";
+  if (V === "og") document.querySelector(".meta").style.flexWrap = "wrap";
+})();
 window.ready = (async () => {
   const svg = await (await fetch("../assets/mascot/newmoon-scan.svg")).text();
   document.getElementById("luno").innerHTML = svg;
@@ -36,9 +52,9 @@ window.ready = (async () => {
   x.scale(2, 2);
   // stars
   let s = 11; const r = () => (s = (s*16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < 140; i++){ const px = r()*1500, py = r()*500, a = .08 + r()*.35, sz = r() < .9 ? 1 : 1.8; x.fillStyle = `rgba(230,234,242,${a})`; x.beginPath(); x.arc(px, py, sz, 0, TAU); x.fill(); }
+  for (let i = 0; i < 160; i++){ const px = r()*PRESET.w, py = r()*PRESET.h, a = .08 + r()*.35, sz = r() < .9 ? 1 : 1.8; x.fillStyle = `rgba(230,234,242,${a})`; x.beginPath(); x.arc(px, py, sz, 0, TAU); x.fill(); }
   // orbit rings behind the character, centred on it
-  const C = [1500 - 24 - 240, 250];
+  const C = [PRESET.w - PRESET.right - PRESET.size/2, PRESET.mtop + PRESET.size/2];
   x.lineWidth = 1.5;
   [[300, .10, []], [390, .08, [4, 10]], [480, .06, [2, 12]]].forEach(([R, a, d]) => { x.strokeStyle = `rgba(163,182,255,${a})`; x.setLineDash(d); x.beginPath(); x.arc(C[0], C[1], R, 0, TAU); x.stroke(); });
   x.setLineDash([]);
@@ -50,7 +66,7 @@ window.ready = (async () => {
   // satellites: lit ones still up, dark ones cleared
   const sats = [[300, 2.5, "lit"], [300, 3.5, "done"], [300, 4.3, "lit"], [390, 2.9, "warn"], [390, 3.3, "done"], [390, 3.9, "done"], [390, 4.6, "lit"], [480, 2.75, "done"], [480, 3.15, "lit"], [480, 3.6, "done"], [300, 1.9, "done"], [390, 2.2, "lit"], [480, 4.15, "done"]];
   for (const [R, a, st] of sats){
-    const px = C[0] + Math.cos(a)*R, py = C[1] + Math.sin(a)*R; if (py < -10 || py > 510 || (px < 1010 && py > 70 && py < 400)) continue;
+    const px = C[0] + Math.cos(a)*R, py = C[1] + Math.sin(a)*R; if (py < -10 || py > PRESET.h + 10 || (px < PRESET.left + 620 && px > PRESET.left - 40 && py > PRESET.top - 30 && py < PRESET.top + 300)) continue;
     const col = st === "lit" ? "#efe9dc" : st === "warn" ? "#e9b45b" : "#07090e";
     if (st !== "done"){ x.shadowColor = col; x.shadowBlur = 14; }
     x.fillStyle = col; x.beginPath(); x.arc(px, py, st === "done" ? 4.5 : 5, 0, TAU); x.fill(); x.shadowBlur = 0;

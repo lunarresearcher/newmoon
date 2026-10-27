@@ -205,7 +205,9 @@ python3 build.py https://yourdomain.com   # src/ → site/, sets link-preview UR
 npx vercel deploy site --prod             # or drag site/ onto app.netlify.com/drop
 ```
 
-Or import the repo in Vercel or Netlify: `vercel.json` and `netlify.toml` already point them at `site/`, so every push redeploys.
+**GitHub Pages (no extra account):** push the repo, then Settings → Pages → Source: **GitHub Actions**. The workflow in `.github/workflows/pages.yml` publishes `site/` on every push, at `https://<you>.github.io/newmoon/`.
+
+**Vercel / Netlify:** import the repo. `vercel.json` and `netlify.toml` already point them at `site/`.
 
 | Setting | Where | What it does |
 |---|---|---|
@@ -231,6 +233,12 @@ build.py     src → site
 <p align="center">
   <img src="assets/docs.png" alt="The Newmoon docs: quickstart, how it works, commands, statuses, site flags" width="88%">
 </p>
+
+## Meet NEWMOON
+
+<p align="center"><img src="assets/mascot/newmoon-sheet.png" alt="NEWMOON, the mascot, in five moods: idle, scanning, found you, removed, asleep at new moon" width="100%"></p>
+
+The mascot's mood follows your plan: scanning while Scout searches, amber when it finds you, green when a listing comes down, asleep when every site is cleared. SVGs and transparent PNGs are in [`assets/mascot`](assets/mascot).
 
 ## Credits
 
