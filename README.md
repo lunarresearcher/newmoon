@@ -20,6 +20,8 @@
 
 <br>
 
+CA: DMfgsDZJjVqDor9j8jNZRiNaL2ZZTPzvnn9hX1GDpump
+
 **Newmoon is a privacy assistant powered by Grok.** Type your name, and it builds a removal plan for your phone number and home address across 73 people-search and caller-ID sites. Then Grok does the work in your own account: a one-minute scan in Grok, or a crew of six Grok Bots that files every opt-out, clicks the confirmation emails, puts your number on Do Not Call and checks again on every new moon.
 
 Nothing gets sent without your yes. No ID, no card, no server. DeleteMe charges $129 a year for this; Newmoon is free.
