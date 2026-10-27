@@ -267,7 +267,6 @@ The mascot's mood follows your plan: scanning while Scout searches, amber when i
 
 ## Credits
 
-- Site list adapted from **[BADBOOL](https://github.com/yaelwrites/Big-Ass-Data-Broker-Opt-Out-List)** by Yael Grauer, CC BY-NC-SA 4.0. If it helps you, [buy her a coffee](https://ko-fi.com/kofisupporter11745).
 - Built on **Grok** and **Grok Bot** by xAI. Newmoon is independent and not affiliated with or endorsed by xAI.
 - Made by [@lunarresearcher](https://x.com/lunarresearcher).
 
